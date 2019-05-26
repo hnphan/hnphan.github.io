@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Golang Gotcha: Typed Nil
+title: Golang Gotcha - Typed Nil
 ---
 
 WIP
