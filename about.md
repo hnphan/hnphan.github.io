@@ -17,4 +17,4 @@ London has been my home for the last couple of years.
 
 ### Contact me
 
-[Email](mailto:hieuphan91@gmail.com)
+Please use one of the methods listed in the footer 👇.
