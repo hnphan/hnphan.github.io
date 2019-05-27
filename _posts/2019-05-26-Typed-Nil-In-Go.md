@@ -21,7 +21,7 @@ true
 true
 false
 ```
-https://play.golang.org/p/V-z6ji9Yzp9 
+[Run code in Go Playground](https://play.golang.org/p/V-z6ji9Yzp9) 
 
 Let's recap. What _seems_ to be going on here is:
 * `foo` is `nil` to start with
@@ -54,7 +54,7 @@ Which results in:
 <nil> <nil> 
 *int <nil> 
 ```
-https://play.golang.org/p/92m7Wi_1Kur
+[Run code in Go Playground](https://play.golang.org/p/92m7Wi_1Kur)
 
 ## Equality, in reality
 In our example, when we do `foo == nil`, we are doing an equality comparision between the `interface{}` variable `foo`, and the `nil` literal.
@@ -116,4 +116,5 @@ func returnsError() error {
 }
 ```
 If you do `if err := returnsError(); err != nil {}`, you'll be wondering why your function returns a non-nil error all the time.
+
 
