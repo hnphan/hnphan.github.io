@@ -3,6 +3,9 @@ layout: post
 title: Golang Gotcha - Typed Nil
 ---
 
+`nil` is the literal representation of zero in Golang. It can be typed, which is super useful because we can easily check if a value is zero, no matter what type the value is.
+It can however lead to some confusing situations.
+
 What do you think this code will print?
 
 ```go
