@@ -167,6 +167,10 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .rail.open .rail-row{width:max-content}
 .rail.open .rchip{flex:0 0 64px}
 .link{font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:2px;padding:6px 2px}
+.dstep{display:grid;grid-template-columns:76px 1fr 76px;gap:8px}
+.dstep .nb{height:60px;font-size:19px}
+.dstep .amt-show{padding-top:0;align-items:center}
+.dstep .amt-show b{font-size:24px}
 .nudge{display:grid;grid-template-columns:76px 1fr 76px;gap:8px;align-items:stretch}
 .nb{height:76px;border-radius:20px;background:var(--surface-2);font-family:var(--font-display);font-weight:700;font-size:22px;user-select:none;-webkit-user-select:none;touch-action:none}
 .nb:active{background:var(--ink);color:var(--bg)}
@@ -276,7 +280,7 @@ const ICON={
 };
 const T={
   feed:{label:'Feed',durs:[5,10,15,20,25,30,45,60],dflt:15,subs:['L','R','bottle'],amounts:[30,60,90,120,150,180,210,240],dfltMl:90},
-  sleep:{label:'Sleep',durs:[10,20,30,45,60,90,120,180],dflt:45,subs:[]},
+  sleep:{label:'Sleep',durs:[15,30,45,60,90,120,180,240,300,360,480,600],dflt:45,subs:[],step:15},
   nappy:{label:'Nappy',durs:[],dflt:0,subs:['wet','dirty','both']}
 };
 const SUB={L:'Left',R:'Right',bottle:'Bottle',wet:'Wet',dirty:'Dirty',both:'Wet + dirty'};
@@ -292,7 +296,9 @@ function dur(d){const m=Math.max(0,Math.round(d/MIN));if(m<60)return m+' min';co
 const ago=ms=>Date.now()-ms<MIN?'just now':shortDur(Date.now()-ms)+' ago';
 function elapsed(d){const s=Math.max(0,Math.floor(d/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`;}
 const chipLabel=m=>m===0?'Now':m===90?'1½h':m>=60&&m%60===0?(m/60)+'h':m+'m';
-const durLabel=m=>m===90?'1½h':m>=60&&m%60===0?(m/60)+'h':m+'m';
+const durLabel=m=>{if(m<60)return m+'m';const h=Math.floor(m/60),r=m%60;return r===0?h+'h':r===30?h+'½h':h+'h'+pad(r);};
+const durStep=t=>T[t].step||5;
+const DUR_MAX=16*60;
 function haptic(){try{navigator.vibrate&&navigator.vibrate(8);}catch(e){}}
 
 function seed(){
@@ -432,7 +438,7 @@ function makeAdjuster({label,get,set,min}){
   else if(S.method==='rail'){
     // Left = further back, right edge = now. A short default set, with More opening the full scrollable rail.
     const BASE=[60,30,15,5,0];
-    const ALL=[360,300,240,180,150,120,90,75,60,50,40,30,25,20,15,10,5,0];
+    const ALL=[720,600,480,420,360,300,240,180,150,120,90,75,60,50,40,30,25,20,15,10,5,0];
     const matches=(m,g,now)=>m===0?(g==null||now-g<45000):(g!=null&&Math.abs((now-g)/MIN-m)<0.75);
     let expanded=(()=>{const g=get(),now=Date.now();return g!=null&&!BASE.some(m=>matches(m,g,now));})();
     refreshBody=()=>{
@@ -589,7 +595,9 @@ function renderNew(){
   h+=`<div data-slot="adj" style="${cv(type)}"></div>`;
   if(done){
     const u=usualDur(type);
-    h+=`<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">How long</span><small>dot = usual</small></div><div class="chips" data-role="dur">${T[type].durs.map(m=>`<button class="chip${m===sheet.dur?' on':''}${m===u?' usual':''}" data-d="${m}" type="button">${durLabel(m)}</button>`).join('')}</div></div>`;
+    h+=`<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">How long</span><small>dot = usual</small></div><div class="chips" data-role="dur">${T[type].durs.map(m=>`<button class="chip${m===sheet.dur?' on':''}${m===u?' usual':''}" data-d="${m}" type="button">${durLabel(m)}</button>`).join('')}</div>
+      <div class="dstep"><button class="nb" data-dstep="-${durStep(type)}" type="button" aria-label="${durStep(type)} minutes shorter">−${durStep(type)}</button><div class="amt-show"><b class="num">${dur(sheet.dur*MIN)}</b></div><button class="nb" data-dstep="${durStep(type)}" type="button" aria-label="${durStep(type)} minutes longer">+${durStep(type)}</button></div>
+      <p class="hint" data-started>Started about ${clock((sheet.when??Date.now())-sheet.dur*MIN)}</p></div>`;
   }
   if(type==='nappy'){
     h+=`<div class="acts three" style="${cv(type)}">${['wet','dirty','both'].map(s=>`<button class="big" data-sub="${s}" type="button"><span class="l">${s==='both'?'Both':SUB[s]}</span><span class="s" data-cap></span></button>`).join('')}</div>`;
@@ -611,6 +619,7 @@ function caps(){
   else if(done) c='save';
   else c=w==null?'start now':'from '+clock(w);
   els.sheetIn.querySelectorAll('[data-cap]').forEach(s=>s.textContent=c);
+  const st=$('[data-started]',els.sheetIn);if(st)st.textContent='Started about '+clock((w??Date.now())-sheet.dur*MIN);
 }
 function commitNew(sub,ml){
   const now=Date.now(),{type,mode}=sheet,at=sheet.when??now;
@@ -647,7 +656,8 @@ function renderEdit(){
   if(e.running) h+=`<div class="running" style="${cv(e.type)}"><div><span class="lab">Running</span><br><b data-since="${e.start}">${elapsed(Date.now()-e.start)}</b></div><button class="btn primary" data-stop type="button" style="padding:0 22px">Stop now</button></div>`;
   if(hasEnd){
     const cur=Math.round((e.end-e.start)/MIN);
-    h+=`<div class="adj" style="${cv(e.type)}"><div class="dur-head"><span class="lab">How long</span><small>${dur(e.end-e.start)}</small></div><div class="chips" data-role="edur">${t.durs.map(m=>`<button class="chip${m===cur?' on':''}" data-d="${m}" type="button">${durLabel(m)}</button>`).join('')}</div></div>`;
+    h+=`<div class="adj" style="${cv(e.type)}"><div class="dur-head"><span class="lab">How long</span><small>${dur(e.end-e.start)}</small></div><div class="chips" data-role="edur">${t.durs.map(m=>`<button class="chip${m===cur?' on':''}" data-d="${m}" type="button">${durLabel(m)}</button>`).join('')}</div>
+      <div class="dstep"><button class="nb" data-edstep="-${durStep(e.type)}" type="button" aria-label="${durStep(e.type)} minutes shorter">−${durStep(e.type)}</button><div class="amt-show"><b class="num">${dur(e.end-e.start)}</b></div><button class="nb" data-edstep="${durStep(e.type)}" type="button" aria-label="${durStep(e.type)} minutes longer">+${durStep(e.type)}</button></div></div>`;
   }
   if(isBottle){
     const ml=e.ml||usualMl();
@@ -716,7 +726,8 @@ els.sheetIn.addEventListener('click',ev=>{
     if(b.dataset.kind){if(sheet.feedKind!==b.dataset.kind){sheet.feedKind=b.dataset.kind;renderNew();}return;}
     if(b.dataset.ml){commitNew('bottle',+b.dataset.ml);return;}
     if(b.dataset.mode){if(sheet.mode!==b.dataset.mode){sheet.mode=b.dataset.mode;renderNew();}return;}
-    if(b.dataset.d&&b.closest('[data-role="dur"]')){sheet.dur=+b.dataset.d;b.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===b));haptic();return;}
+    if(b.dataset.d&&b.closest('[data-role="dur"]')){sheet.dur=+b.dataset.d;renderNew();haptic();return;}
+    if(b.dataset.dstep){sheet.dur=Math.max(durStep(sheet.type),Math.min(DUR_MAX,sheet.dur+(+b.dataset.dstep)));renderNew();haptic();return;}
     if(b.hasAttribute('data-sub')){commitNew(b.dataset.sub);return;}
   }
   if(sheet.kind==='edit'){
@@ -730,8 +741,9 @@ els.sheetIn.addEventListener('click',ev=>{
     if(b.dataset.mlstep){e.ml=Math.max(5,Math.min(400,(e.ml||usualMl())+(+b.dataset.mlstep)));save();renderMain();renderEdit();haptic();return;}
     if(b.dataset.setml){e.ml=+b.dataset.setml;save();renderMain();renderEdit();haptic();return;}
     if(b.dataset.w){sheet.which=b.dataset.w;renderEdit();return;}
-    if(b.dataset.d&&b.closest('[data-role="edur"]')){
-      const d=+b.dataset.d*MIN,now=Date.now();
+    const edMin=b.dataset.edstep?Math.max(durStep(e.type),Math.min(DUR_MAX,Math.round((e.end-e.start)/MIN)+(+b.dataset.edstep))):(b.dataset.d&&b.closest('[data-role="edur"]')?+b.dataset.d:null);
+    if(edMin!=null){
+      const d=edMin*MIN,now=Date.now();
       if(sheet.which==='end'){e.start=e.end-d;}else{e.end=e.start+d;if(e.end>now){e.end=now;e.start=now-d;}}
       save();renderMain();renderEdit();haptic();return;
     }
