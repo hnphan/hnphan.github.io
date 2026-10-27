@@ -167,6 +167,12 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .rail.open .rail-row{width:max-content}
 .rail.open .rchip{flex:0 0 64px}
 .link{font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:2px;padding:6px 2px}
+.dchip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:56px}
+.dchip .dl{font-weight:700;font-size:16px}
+.dchip .dc{font-size:11px;font-weight:500;color:var(--muted)}
+.dchip.on .dc{color:var(--bg);opacity:.8}
+.span-sum{margin:0;text-align:center;font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums}
+.span-sum b{color:var(--ink);font-weight:700}
 .dstep{display:grid;grid-template-columns:76px 1fr 76px;gap:8px}
 .dstep .nb{height:60px;font-size:19px}
 .dstep .amt-show{padding-top:0;align-items:center}
@@ -618,10 +624,12 @@ function renderNew(){
   if(type!=='nappy') h+=`<div class="seg seg-lg" data-role="mode"><button data-mode="timer" class="${done?'':'on'}" type="button">Start timer</button><button data-mode="done" class="${done?'on':''}" type="button">Already done</button></div>`;
   h+=`<div data-slot="adj" style="${cv(type)}"></div>`;
   if(done){
-    const u=usualDur(type);
-    h+=`<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">How long</span><small>dot = usual</small></div><div class="chips" data-role="dur">${T[type].durs.map(m=>`<button class="chip${m===sheet.dur?' on':''}${m===u?' usual':''}" data-d="${m}" type="button">${durLabel(m)}</button>`).join('')}</div>
-      <div class="dstep"><button class="nb" data-dstep="-${durStep(type)}" type="button" aria-label="${durStep(type)} minutes shorter">−${durStep(type)}</button><div class="amt-show"><b class="num">${dur(sheet.dur*MIN)}</b></div><button class="nb" data-dstep="${durStep(type)}" type="button" aria-label="${durStep(type)} minutes longer">+${durStep(type)}</button></div>
-      <p class="hint" data-started>Started about ${clock((sheet.when??Date.now())-sheet.dur*MIN)}</p></div>`;
+    // Duration chips double as start-time chips: big = length, small = the clock time it means.
+    const u=usualDur(type),end=sheet.when??Date.now(),st=durStep(type);
+    h+=`<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">${type==='sleep'?'Fell asleep':'Started'}</span><small>tap a length or a time</small></div>
+      <div class="chips" data-role="dur">${T[type].durs.map(m=>`<button class="chip dchip${m===sheet.dur?' on':''}${m===u?' usual':''}" data-d="${m}" type="button"><span class="dl">${durLabel(m)}</span><span class="dc" data-dclock="${m}">${clock(end-m*MIN)}</span></button>`).join('')}</div>
+      <div class="dstep"><button class="nb" data-dstep="${st}" type="button" aria-label="${st} minutes earlier">−${st}</button><div class="amt-show"><b class="num" data-startbig>${clock(end-sheet.dur*MIN)}</b></div><button class="nb" data-dstep="-${st}" type="button" aria-label="${st} minutes later">+${st}</button></div>
+      <p class="span-sum" data-sum></p></div>`;
   }
   if(type==='nappy'){
     h+=`<div class="acts three" style="${cv(type)}">${['wet','dirty','both'].map(s=>`<button class="big" data-sub="${s}" type="button"><span class="l">${s==='both'?'Both':SUB[s]}</span><span class="s" data-cap></span></button>`).join('')}</div>`;
@@ -631,7 +639,7 @@ function renderNew(){
     h+=`<div class="acts" style="${cv(type)}"><button class="big" data-sub="" type="button"><span class="l">${done?'Save sleep':'Start sleep'}</span><span class="s" data-cap></span></button></div>`;
   }
   els.sheetIn.innerHTML=h;
-  const adj=makeAdjuster({label:type==='nappy'?'When':done?'Ended':'Started',get:()=>sheet.when,set:v=>{sheet.when=v;caps();}});
+  const adj=makeAdjuster({label:type==='nappy'?'When':done?(type==='sleep'?'Woke up':'Ended'):'Started',get:()=>sheet.when,set:v=>{sheet.when=v;caps();}});
   $('[data-slot="adj"]',els.sheetIn).append(adj.el);adjusters=[adj];
   caps();
 }
@@ -643,7 +651,13 @@ function caps(){
   else if(done) c='save';
   else c=w==null?'start now':'from '+clock(w);
   els.sheetIn.querySelectorAll('[data-cap]').forEach(s=>s.textContent=c);
-  const st=$('[data-started]',els.sheetIn);if(st)st.textContent='Started about '+clock((w??Date.now())-sheet.dur*MIN);
+  if(done){
+    const end=w??Date.now(),start=end-sheet.dur*MIN;
+    els.sheetIn.querySelectorAll('[data-dclock]').forEach(x=>{x.textContent=clock(end-(+x.dataset.dclock)*MIN);});
+    const big=$('[data-startbig]',els.sheetIn);if(big)big.textContent=clock(start);
+    const sum=$('[data-sum]',els.sheetIn);
+    if(sum)sum.innerHTML=`${sheet.type==='sleep'?'Asleep':'Fed'} <b>${clock(start)}</b> → <b>${w==null?'now':clock(end)}</b> · ${dur(sheet.dur*MIN)}`;
+  }
 }
 function commitNew(sub,ml){
   const now=Date.now(),{type,mode}=sheet,at=sheet.when??now;
@@ -810,6 +824,7 @@ setInterval(()=>{
   const n=Date.now();
   document.querySelectorAll('[data-since]').forEach(el=>{el.textContent=elapsed(n-(+el.dataset.since));});
   adjusters.forEach(a=>{if(!a.busy)a.refresh();});
+  if(sheet&&sheet.kind==='new'&&sheet.mode==='done')caps();
 },1000);
 setInterval(renderMain,15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderMain();});
