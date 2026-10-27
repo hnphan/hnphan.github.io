@@ -234,6 +234,9 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .toast span{flex:1;min-width:0}
 .toast button{color:var(--bg);font-weight:700;padding:10px 12px;border-radius:11px}
 .toast button:active{background:rgba(127,127,127,.25)}
+.toast.tune{gap:4px}
+.toast .tstep{min-width:52px;min-height:44px;padding:0 8px;font-family:var(--font-display);font-size:17px;background:rgba(127,127,127,.22)}
+.toast b{font-weight:700}
 
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 @media (max-height:640px){.act{min-height:76px}.tiles .v{font-size:19px}}
@@ -384,14 +387,24 @@ function dayLabel(ms){
 /* ---------- undo + toast ---------- */
 let undoState=null,toastTimer=null;
 const snapshot=()=>{undoState=JSON.stringify(S.entries);};
-function toast(msg,id){
-  els.toast.innerHTML=`<span>${msg}</span>${id?'<button data-t="edit" type="button">Edit</button>':''}<button data-t="undo" type="button">Undo</button>`;
+const bottleMsg=e=>`Bottle <b class="num">${e.ml}</b> ml · ${clock(e.start)}`;
+function armToast(ms){clearTimeout(toastTimer);toastTimer=setTimeout(()=>{els.toast.hidden=true;},ms);}
+function toast(msg,id,opts={}){
+  els.toast.classList.toggle('tune',!!opts.ml);
+  els.toast.innerHTML=opts.ml
+    ?`<span>${msg}</span><button class="tstep" data-t="ml" data-v="-10" type="button" aria-label="10 ml less">−10</button><button class="tstep" data-t="ml" data-v="10" type="button" aria-label="10 ml more">+10</button><button data-t="undo" type="button">Undo</button>`
+    :`<span>${msg}</span>${id?'<button data-t="edit" type="button">Edit</button>':''}<button data-t="undo" type="button">Undo</button>`;
   els.toast.dataset.id=id||'';
   els.toast.hidden=false;
-  clearTimeout(toastTimer);toastTimer=setTimeout(()=>{els.toast.hidden=true;},6000);
+  armToast(opts.ml?8000:6000);
 }
 els.toast.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.t==='ml'){
+    const x=S.entries.find(y=>y.id===els.toast.dataset.id);
+    if(x){x.ml=Math.max(10,Math.min(400,x.ml+(+b.dataset.v)));save();renderMain();$('span',els.toast).innerHTML=bottleMsg(x);haptic();}
+    armToast(8000);return;
+  }
   els.toast.hidden=true;
   if(b.dataset.t==='undo'&&undoState){S.entries=JSON.parse(undoState);undoState=null;save();renderMain();}
   if(b.dataset.t==='edit')openEdit(els.toast.dataset.id);
@@ -556,9 +569,20 @@ function usualDur(type){
   const opts=T[type].durs;if(!ds.length)return T[type].dflt;
   const md=median(ds);return opts.reduce((a,b)=>Math.abs(b-md)<Math.abs(a-md)?b:a);
 }
+// Chips adapt: an in-between amount logged 2+ times in the last 20 bottles replaces the nearest standard chip.
+function bottleAmounts(){
+  const base=T.feed.amounts,recent=S.entries.filter(e=>e.sub==='bottle'&&e.ml&&!e.ex).sort((a,b)=>b.start-a.start).slice(0,20);
+  const n={};recent.forEach(e=>{n[e.ml]=(n[e.ml]||0)+1;});
+  const list=[...base],custom=new Set();
+  Object.keys(n).map(Number).filter(m=>!base.includes(m)&&n[m]>=2).sort((a,b)=>n[b]-n[a]).slice(0,3).forEach(c=>{
+    let bi=-1;list.forEach((v,i)=>{if(!custom.has(v)&&(bi<0||Math.abs(v-c)<Math.abs(list[bi]-c)))bi=i;});
+    if(bi>=0&&(n[c]||0)>=(n[list[bi]]||0)){list[bi]=c;custom.add(c);}
+  });
+  return list.sort((a,b)=>a-b);
+}
 function usualMl(){
   const ms=S.entries.filter(e=>e.sub==='bottle'&&e.ml).sort((a,b)=>b.start-a.start).slice(0,6).map(e=>e.ml);
-  const opts=T.feed.amounts;if(!ms.length)return T.feed.dfltMl;
+  const opts=bottleAmounts();if(!ms.length)return T.feed.dfltMl;
   const md=median(ms);return opts.reduce((a,b)=>Math.abs(b-md)<Math.abs(a-md)?b:a);
 }
 function suggestSide(){
@@ -584,8 +608,8 @@ function renderNew(){
     const u=usualMl();
     h+=`<div data-slot="adj" style="${cv(type)}"></div>`;
     h+=`<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">Amount · tap to save</span><small>dot = usual</small></div>
-      <div class="acts four">${T.feed.amounts.map(m=>`<button class="big amt${m===u?'':' alt'}" data-ml="${m}" type="button">${m===u?'<span class="next">usual</span>':''}<span class="l">${m}</span><span class="s">ml</span></button>`).join('')}</div>
-      <p class="hint">Fine-tune afterwards with Edit if it was an odd amount</p></div>`;
+      <div class="acts four">${bottleAmounts().map(m=>`<button class="big amt${m===u?'':' alt'}" data-ml="${m}" type="button">${m===u?'<span class="next">usual</span>':''}<span class="l">${m}</span><span class="s">ml</span></button>`).join('')}</div>
+      <p class="hint">Odd amount? Use −10 / +10 after saving</p></div>`;
     els.sheetIn.innerHTML=h;
     const adj=makeAdjuster({label:'When',get:()=>sheet.when,set:v=>{sheet.when=v;}});
     $('[data-slot="adj"]',els.sheetIn).append(adj.el);adjusters=[adj];
@@ -634,7 +658,8 @@ function commitNew(sub,ml){
   S.entries.push(e);
   S.stats.push({m:S.method,s:Math.round((now-sheet.t0)/100)/10,adj:sheet.when!=null,at:now});
   save();closeSheet();renderMain();
-  toast(msg+(hadEx?' · examples cleared':''),e.id);
+  if(ml) toast(bottleMsg(e),e.id,{ml:true});
+  else toast(msg+(hadEx?' · examples cleared':''),e.id);
 }
 
 function stopRunning(e){
@@ -663,7 +688,7 @@ function renderEdit(){
     const ml=e.ml||usualMl();
     h+=`<div class="adj" style="${cv(e.type)}"><span class="lab">Amount</span>
       <div class="nudge"><button class="nb" data-mlstep="-10" type="button" aria-label="10 ml less">−10</button><div class="amt-show"><b class="num">${ml}</b> ml</div><button class="nb" data-mlstep="10" type="button" aria-label="10 ml more">+10</button></div>
-      <div class="chips">${t.amounts.map(m=>`<button class="chip${m===ml?' on':''}" data-setml="${m}" type="button">${m}</button>`).join('')}</div></div>`;
+      <div class="chips">${bottleAmounts().map(m=>`<button class="chip${m===ml?' on':''}" data-setml="${m}" type="button">${m}</button>`).join('')}</div></div>`;
   }
   h+=`<div class="foot"><button class="btn danger${sheet.armed?' armed':''}" data-del type="button">${sheet.armed?'Tap to confirm':'Delete'}</button><button class="btn primary" data-close type="button">Done</button></div>`;
   els.sheetIn.innerHTML=h;
