@@ -442,7 +442,7 @@ function makeAdjuster({label,get,set,min}){
 
   if(S.method==='chips'){
     const CH=[0,5,10,15,20,30,45,60,90,120,180,240];
-    body.innerHTML=`<span class="ask">How long ago?</span><div class="chips">${CH.map(m=>`<button class="chip" data-m="${m}" type="button">${chipLabel(m)}</button>`).join('')}</div>`;
+    body.innerHTML=`<span class="ask">How long ago?</span><div class="chips">${CH.map(m=>`<button class="chip dchip" data-m="${m}" type="button"><span class="dl">${chipLabel(m)}</span><span class="dc" data-agoclock="${m}">${clock(Date.now()-m*MIN)}</span></button>`).join('')}</div>`;
     body.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const m=+b.dataset.m;apply(m===0?null:Date.now()-m*MIN);});
     refreshBody=()=>{
       const g=get(),now=Date.now();
@@ -451,6 +451,7 @@ function makeAdjuster({label,get,set,min}){
         const on=m===0?(g==null||now-g<45000):(g!=null&&Math.abs((now-g)/MIN-m)<0.75);
         b.classList.toggle('on',on);
         b.disabled=!!(min&&m>0&&now-m*MIN<min()-1000);
+        $('.dc',b).textContent=clock(now-m*MIN);
       });
     };
   }
