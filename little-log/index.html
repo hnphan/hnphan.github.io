@@ -137,6 +137,25 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 
 .adj{display:flex;flex-direction:column;gap:12px}
 .adj-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.step-head{gap:10px}
+.step-head .back{font-size:30px;line-height:1;padding-bottom:4px}
+.step-ic{width:44px;height:44px;display:grid;place-items:center;color:var(--c);flex:none}
+.step-title{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.step-title h2{font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;color:var(--ink)}
+.dots{display:flex;gap:5px}
+.dots i{width:18px;height:4px;border-radius:2px;background:var(--line)}
+.dots i.done{background:var(--c);opacity:.45}
+.dots i.on{background:var(--c)}
+.step-q{margin:4px 0 0;font-family:var(--font-display);font-weight:700;font-size:26px;letter-spacing:-.01em;line-height:1.15;text-wrap:balance}
+.choices{display:grid;gap:10px}
+.choices.two{grid-template-columns:1fr 1fr}
+.choices.three{grid-template-columns:1fr 1fr 1fr}
+.choice{position:relative;min-height:150px;border-radius:24px;background:var(--soft);border:2px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 8px;text-align:center}
+.choice .l{font-family:var(--font-display);font-weight:700;font-size:23px;color:var(--ink)}
+.choice .s{font-size:13px;color:var(--muted)}
+.choice .cbadge{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c);white-space:nowrap}
+.choice:active{transform:scale(.97);border-color:var(--c)}
+.step-q+[data-slot] .adj>.adj-head:first-child{display:none}
 .when-row{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:0 16px;border-radius:18px;background:var(--surface-2);text-align:left}
 .when-row .lab{flex:none}
 .when-val{flex:1;min-width:0;font-family:var(--font-display);font-weight:700;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -286,6 +305,13 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
       <button data-m="timeline" type="button">Timeline</button>
     </div>
   </div>
+  <div class="picker">
+    <span class="picker-label">Layout</span>
+    <div class="seg" id="flowSeg" role="group" aria-label="Logging layout">
+      <button data-f="one" type="button">One screen</button>
+      <button data-f="steps" type="button">Step by step</button>
+    </div>
+  </div>
   <section class="tiles" id="tiles"></section>
   <div class="examples" id="examples" hidden>
     <p>Example entries. They clear when you log your first real one.</p>
@@ -351,6 +377,7 @@ function applyPrefs(){
   document.documentElement.dataset.night=S.night?'on':'off';
   els.night.setAttribute('aria-pressed',S.night?'true':'false');
   els.seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.method));
+  $('#flowSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.f===(S.flow||'one')));
 }
 
 /* ---------- main screen ---------- */
@@ -640,6 +667,7 @@ function openNew(type){
   renderNew();showSheet();
 }
 function renderNew(){
+  if(S.flow==='steps'){renderSteps();return;}
   const {type,mode}=sheet,done=mode==='done';
   const bottle=type==='feed'&&sheet.feedKind==='bottle';
   let h=head(type,T[type].label);
@@ -682,6 +710,69 @@ function renderNew(){
   mountTime(adj);
   caps();
 }
+/* ---------- Step-by-step layout: one question per screen ---------- */
+// Choice screens advance on tap; the last screen's pinned button saves. Branches decide the steps.
+function stepsFor(){
+  const {type}=sheet,whenDur=sheet.mode==='done'?['when','dur']:['when'];
+  if(type==='nappy')return ['nkind','when'];
+  if(type==='feed')return ['fkind',...(sheet.feedKind==='bottle'?['amount','when']:['mode',...whenDur])];
+  return ['mode',...whenDur];
+}
+const choice=(attr,label,sub,badge)=>`<button class="choice" data-pick="${attr}" type="button">${badge?`<span class="cbadge">${badge}</span>`:''}<span class="l">${label}</span>${sub?`<span class="s">${sub}</span>`:''}</button>`;
+function durBlock(type){
+  const u=usualDur(type),end=sheet.when??Date.now(),st=durStep(type);
+  return `<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">${type==='sleep'?'Fell asleep':'Started'}</span><small>tap a length or a time</small></div>
+    <div class="chips" data-role="dur">${T[type].durs.map(m=>`<button class="chip dchip${m===sheet.dur?' on':''}${m===u?' usual':''}" data-d="${m}" type="button"><span class="dl">${durLabel(m)}</span><span class="dc" data-dclock="${m}">${clock(end-m*MIN)}</span></button>`).join('')}</div>
+    <div class="dstep"><button class="nb" data-dstep="${st}" type="button" aria-label="${st} minutes earlier">−${st}</button><div class="amt-show"><b class="num" data-startbig>${clock(end-sheet.dur*MIN)}</b></div><button class="nb" data-dstep="-${st}" type="button" aria-label="${st} minutes later">+${st}</button></div>
+    <p class="span-sum" data-sum></p></div>`;
+}
+function saveBar(type){
+  if(type==='nappy')return `<div class="acts" style="${cv(type)}"><button class="big" data-sub="${sheet.sub}" type="button"><span class="l">Save ${SUB[sheet.sub].toLowerCase()} nappy</span><span class="s" data-cap></span></button></div>`;
+  if(type==='feed'&&sheet.feedKind==='bottle')return `<div class="acts" style="${cv(type)}"><button class="big" data-savebottle type="button"><span class="l">Save ${sheet.ml} ml</span><span class="s" data-cap></span></button></div>`;
+  if(type==='feed')return `<div class="acts two" style="${cv(type)}">${['L','R'].map(x=>`<button class="big${x===sheet.next?'':' alt'}" data-sub="${x}" type="button">${x===sheet.next?'<span class="next">next</span>':''}<span class="l">${SUB[x]}</span><span class="s" data-cap></span></button>`).join('')}</div>`;
+  return `<div class="acts" style="${cv(type)}"><button class="big" data-sub="" type="button"><span class="l">${sheet.mode==='done'?'Save sleep':'Start sleep'}</span><span class="s" data-cap></span></button></div>`;
+}
+function renderSteps(){
+  const {type}=sheet,list=stepsFor();
+  sheet.step=Math.min(sheet.step||0,list.length-1);
+  const id=list[sheet.step],last=sheet.step===list.length-1;
+  const crumbs=[T[type].label];
+  if(type==='nappy'&&sheet.sub&&sheet.step>0)crumbs.push(SUB[sheet.sub]);
+  if(type==='feed'&&sheet.step>0)crumbs.push(sheet.feedKind==='bottle'?'Bottle':'Breast');
+  if(type==='feed'&&sheet.feedKind==='bottle'&&sheet.step>1)crumbs.push(sheet.ml+' ml');
+  if(sheet.mode&&list.includes('mode')&&list.indexOf('mode')<sheet.step)crumbs.push(sheet.mode==='done'?'Already done':'Timer');
+  const dots=list.map((_,i)=>`<i class="${i===sheet.step?'on':i<sheet.step?'done':''}"></i>`).join('');
+  let h=`<div class="grab"></div><div class="sh-head step-head" style="${cv(type)}">
+    ${sheet.step>0?'<button class="x back" data-back aria-label="Back" type="button">‹</button>':`<span class="step-ic">${ICON[type]}</span>`}
+    <div class="step-title"><h2>${crumbs.join(' · ')}</h2><span class="dots" aria-label="Step ${sheet.step+1} of ${list.length}">${dots}</span></div>
+    <button class="x" data-close aria-label="Close" type="button">×</button></div>`;
+  let mountAdj=null;
+  if(id==='nkind'){
+    h+=`<p class="step-q">What was in it?</p><div class="choices three" style="${cv(type)}">${['wet','dirty','both'].map(x=>choice('sub:'+x,x==='both'?'Both':SUB[x])).join('')}</div>`;
+  }else if(id==='fkind'){
+    const lk=lastFeedKind();
+    h+=`<p class="step-q">Breast or bottle?</p><div class="choices two" style="${cv(type)}">${choice('feedKind:breast','Breast','next side: '+SUB[sheet.next],lk==='breast'?'last time':'')}${choice('feedKind:bottle','Bottle','log an amount',lk==='bottle'?'last time':'')}</div>`;
+  }else if(id==='mode'){
+    h+=`<p class="step-q">${type==='sleep'?'Asleep now, or already awake?':'Feeding now, or already done?'}</p><div class="choices two" style="${cv(type)}">${choice('mode:timer','Start timer',type==='sleep'?'asleep now':'feeding now')}${choice('mode:done','Already done','log a past one')}</div>`;
+  }else if(id==='amount'){
+    const u=usualMl();if(sheet.ml==null)sheet.ml=u;
+    h+=`<p class="step-q">How much?</p><div class="adj" style="${cv(type)}"><div class="acts four">${bottleAmounts().map(m=>`<button class="amtchip${m===sheet.ml?' on':''}" data-pickml="${m}" type="button" aria-pressed="${m===sheet.ml}"><span class="l">${m}</span>${m===u?'<span class="tag">usual</span>':''}</button>`).join('')}</div></div>`;
+    h+=`<div class="acts savebar" style="${cv(type)}"><button class="nb" data-mlnudge="-10" type="button" aria-label="10 ml less">−10</button><button class="big" data-next type="button"><span class="l">Next</span><span class="s"><span data-mllabel>${sheet.ml}</span> ml</span></button><button class="nb" data-mlnudge="10" type="button" aria-label="10 ml more">+10</button></div>`;
+  }else if(id==='when'){
+    const lab=type==='nappy'||sheet.feedKind==='bottle'&&type==='feed'?'When':sheet.mode==='done'?(type==='sleep'?'Woke up':'Ended'):'Started';
+    h+=`<p class="step-q">${lab==='When'?'When?':lab==='Started'?'When did it start?':lab==='Woke up'?'When did they wake up?':'When did it end?'}</p><div data-slot="adj" style="${cv(type)}"></div>`;
+    h+=last?saveBar(type):`<div class="acts" style="${cv(type)}"><button class="big" data-next type="button"><span class="l">Next</span><span class="s" data-whenval></span></button></div>`;
+    mountAdj=lab;
+  }else if(id==='dur'){
+    h+=`<p class="step-q">${type==='sleep'?'When did they fall asleep?':'When did it start?'}</p>`+durBlock(type)+saveBar(type);
+  }
+  els.sheetIn.innerHTML=h;
+  if(mountAdj){
+    const adj=makeAdjuster({label:mountAdj,get:()=>sheet.when,set:v=>{sheet.when=v;caps();updateWhen();}});
+    $('[data-slot="adj"]',els.sheetIn).append(adj.el);adjusters=[adj];
+  }else adjusters=[];
+  caps();updateWhen();
+}
 // New-log sheets start with the time folded to one line ("When: Now · Change"); tapping opens the full picker.
 function mountTime(adj){
   const slot=$('[data-slot="adj"]',els.sheetIn);adjusters=[adj];
@@ -692,7 +783,7 @@ function mountTime(adj){
 }
 function updateWhen(){
   const v=$('[data-whenval]',els.sheetIn);if(!v||!sheet)return;
-  v.textContent=sheet.when==null?'Now':`${clock(sheet.when)} · ${ago(sheet.when)}`;
+  v.textContent=sheet.when==null?(v.closest('[data-next]')?'now':'Now'):(v.closest('[data-next]')?clock(sheet.when):`${clock(sheet.when)} · ${ago(sheet.when)}`);
 }
 function caps(){
   if(!sheet||sheet.kind!=='new')return;
@@ -722,7 +813,7 @@ function commitNew(sub,ml){
   else if(mode==='timer'){e={id:uid(),type,sub:sub||null,start:at,end:null,running:true};msg=`${T[type].label} timer started${sub?' · '+SUB[sub]:''}`;}
   else{e={id:uid(),type,sub:sub||null,start:at-sheet.dur*MIN,end:at};msg=`${T[type].label} logged · ${dur(sheet.dur*MIN)}`;}
   S.entries.push(e);
-  S.stats.push({m:S.method,s:Math.round((now-sheet.t0)/100)/10,adj:sheet.when!=null,at:now});
+  S.stats.push({f:S.flow||'one',m:S.method,s:Math.round((now-sheet.t0)/100)/10,adj:sheet.when!=null,at:now});
   save();closeSheet();renderMain();
   if(ml) toast(bottleMsg(e)+(hadEx?' · examples cleared':''),e.id);
   else toast(msg+(hadEx?' · examples cleared':''),e.id);
@@ -793,11 +884,14 @@ function renderTest(){
   const withA=rows.filter(r=>r.a.length>=2);
   const best=withA.length>1?withA.reduce((x,y)=>y.ma<x.ma?y:x).m:null;
   const f=v=>v==null?'—':v.toFixed(1)+' s';
-  let h=`<div class="grab"></div><div class="sh-head" style="--c:var(--ink)"><h2>Compare pickers</h2><button class="x" data-close aria-label="Close" type="button">×</button></div>
+  let h=`<div class="grab"></div><div class="sh-head" style="--c:var(--ink)"><h2>Compare</h2><button class="x" data-close aria-label="Close" type="button">×</button></div>
   <p class="prose">Each time you log from the Feed, Sleep or Nappy buttons, the app times how long the sheet was open. <b>Logs where you changed the time</b> are the fair comparison between pickers.</p>
   <div style="overflow-x:auto"><table class="cmp"><thead><tr><th>Picker</th><th>Changed time</th><th>Left at now</th></tr></thead><tbody>
   ${rows.map(r=>`<tr class="${r.m===best?'best':''}"><td>${METHODS[r.m]}${r.m===S.method?' <span class="badge">in use</span>':''}</td><td>${f(r.ma)} <span style="color:var(--muted)">· ${r.a.length} logs</span></td><td>${f(r.mn)} <span style="color:var(--muted)">· ${r.n.length}</span></td></tr>`).join('')}
   </tbody></table></div>
+  ${(()=>{const FL={one:'One screen',steps:'Step by step'};
+    const rr=Object.keys(FL).map(k=>{const all=S.stats.filter(x=>(x.f||'one')===k);const a=all.filter(x=>x.adj).map(x=>x.s),n=all.filter(x=>!x.adj).map(x=>x.s);return {k,a,n};});
+    return `<div style="overflow-x:auto"><table class="cmp"><thead><tr><th>Layout</th><th>Changed time</th><th>Left at now</th></tr></thead><tbody>${rr.map(r=>`<tr><td>${FL[r.k]}${r.k===(S.flow||'one')?' <span class="badge">in use</span>':''}</td><td>${f(median(r.a))} <span style="color:var(--muted)">· ${r.a.length} logs</span></td><td>${f(median(r.n))} <span style="color:var(--muted)">· ${r.n.length}</span></td></tr>`).join('')}</tbody></table></div>`;})()}
   <p class="prose">Times are medians. Try each picker for a day or so in real conditions, one-handed if you can, then compare.</p>
   <ul class="howto">
     <li><b>Chips</b> Tap how long ago: 5m, 15m, 1h and so on.</li>
@@ -814,6 +908,9 @@ els.sheetIn.addEventListener('click',ev=>{
   const b=ev.target.closest('button');if(!b||!sheet)return;
   if(b.hasAttribute('data-close')){closeSheet();return;}
   if(sheet.kind==='new'){
+    if(b.dataset.pick){const [k,v]=b.dataset.pick.split(':');sheet[k]=v;sheet.step=(sheet.step||0)+1;haptic();renderNew();return;}
+    if(b.hasAttribute('data-next')){sheet.step=(sheet.step||0)+1;haptic();renderNew();return;}
+    if(b.hasAttribute('data-back')){sheet.step=Math.max(0,(sheet.step||0)-1);renderNew();return;}
     if(b.hasAttribute('data-opentime')){sheet.timeOpen=true;renderNew();haptic();return;}
     if(b.dataset.kind){if(sheet.feedKind!==b.dataset.kind){sheet.feedKind=b.dataset.kind;renderNew();}return;}
     if(b.dataset.pickml){
@@ -879,6 +976,7 @@ els.seg.addEventListener('click',e=>{
   S.method=b.dataset.m;save();applyPrefs();
   if(sheet&&sheet.kind!=='test')renderSheet();
 });
+$('#flowSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.flow=b.dataset.f;save();applyPrefs();if(sheet&&sheet.kind==='new'){sheet.step=0;renderNew();}});
 els.night.addEventListener('click',()=>{S.night=!S.night;save();applyPrefs();});
 $('#testBtn').addEventListener('click',openTest);
 $('#clearEx').addEventListener('click',()=>{snapshot();S.entries=S.entries.filter(e=>!e.ex);save();renderMain();toast('Examples cleared',null);});
