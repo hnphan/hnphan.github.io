@@ -203,8 +203,14 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .acts.three{grid-template-columns:repeat(3,1fr)}
 .acts.two{grid-template-columns:repeat(2,1fr)}
 .acts.four{grid-template-columns:repeat(4,1fr);row-gap:14px;padding-top:6px}
-.big.amt{min-height:66px;border-radius:18px}
-.big.amt .l{font-family:var(--font-display);font-size:22px;font-variant-numeric:tabular-nums}
+.amtchip{min-height:62px;border-radius:16px;background:var(--surface-2);border:2px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative}
+.amtchip .l{font-family:var(--font-display);font-weight:700;font-size:21px;font-variant-numeric:tabular-nums}
+.amtchip .tag{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.amtchip.on{background:var(--soft);border-color:var(--c)}
+.amtchip.on .tag{color:var(--c)}
+.amtchip:active{transform:scale(.97)}
+/* The final action row of every sheet stays pinned in reach, so the next step is never below the fold. */
+.sheet-in>.acts:last-child,.sheet-in>.foot:last-child{position:sticky;bottom:0;z-index:2;background:var(--surface);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -1px 0 var(--line)}
 .amt-show{display:flex;align-items:baseline;justify-content:center;gap:6px;border-radius:20px;background:var(--surface-2);font-size:15px;color:var(--muted);padding-top:18px}
 .amt-show b{font-family:var(--font-display);font-size:34px;color:var(--ink)}
 .big{min-height:78px;border-radius:22px;background:var(--c);color:var(--on-accent);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;padding:6px}
@@ -612,14 +618,18 @@ function renderNew(){
   let h=head(type,T[type].label);
   if(type==='feed') h+=`<div class="seg seg-lg" data-role="kind"><button data-kind="breast" class="${bottle?'':'on'}" type="button">Breast</button><button data-kind="bottle" class="${bottle?'on':''}" type="button">Bottle</button></div>`;
   if(bottle){
+    // Pick, then save: the usual amount starts selected, and the pinned Save button names exactly what will be logged.
     const u=usualMl();
+    if(sheet.ml==null)sheet.ml=u;
     h+=`<div data-slot="adj" style="${cv(type)}"></div>`;
-    h+=`<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">Amount · tap to save</span><small>dot = usual</small></div>
-      <div class="acts four">${bottleAmounts().map(m=>`<button class="big amt${m===u?'':' alt'}" data-ml="${m}" type="button">${m===u?'<span class="next">usual</span>':''}<span class="l">${m}</span><span class="s">ml</span></button>`).join('')}</div>
+    h+=`<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">Amount</span><small>ml</small></div>
+      <div class="acts four">${bottleAmounts().map(m=>`<button class="amtchip${m===sheet.ml?' on':''}" data-pickml="${m}" type="button" aria-pressed="${m===sheet.ml}"><span class="l">${m}</span>${m===u?'<span class="tag">usual</span>':''}</button>`).join('')}</div>
       <p class="hint">Odd amount? Use −10 / +10 after saving</p></div>`;
+    h+=`<div class="acts" style="${cv(type)}"><button class="big" data-savebottle type="button"><span class="l">Save <span data-mllabel>${sheet.ml}</span> ml</span><span class="s" data-cap></span></button></div>`;
     els.sheetIn.innerHTML=h;
-    const adj=makeAdjuster({label:'When',get:()=>sheet.when,set:v=>{sheet.when=v;}});
+    const adj=makeAdjuster({label:'When',get:()=>sheet.when,set:v=>{sheet.when=v;caps();}});
     $('[data-slot="adj"]',els.sheetIn).append(adj.el);adjusters=[adj];
+    caps();
     return;
   }
   if(type!=='nappy') h+=`<div class="seg seg-lg" data-role="mode"><button data-mode="timer" class="${done?'':'on'}" type="button">Start timer</button><button data-mode="done" class="${done?'on':''}" type="button">Already done</button></div>`;
@@ -648,7 +658,8 @@ function caps(){
   if(!sheet||sheet.kind!=='new')return;
   const w=sheet.when,done=sheet.mode==='done';
   let c;
-  if(sheet.type==='nappy') c=w==null?'log now':'log at '+clock(w);
+  if(sheet.type==='feed'&&sheet.feedKind==='bottle') c=w==null?'now':'at '+clock(w);
+  else if(sheet.type==='nappy') c=w==null?'log now':'log at '+clock(w);
   else if(done) c='save';
   else c=w==null?'start now':'from '+clock(w);
   els.sheetIn.querySelectorAll('[data-cap]').forEach(s=>s.textContent=c);
@@ -764,7 +775,13 @@ els.sheetIn.addEventListener('click',ev=>{
   if(b.hasAttribute('data-close')){closeSheet();return;}
   if(sheet.kind==='new'){
     if(b.dataset.kind){if(sheet.feedKind!==b.dataset.kind){sheet.feedKind=b.dataset.kind;renderNew();}return;}
-    if(b.dataset.ml){commitNew('bottle',+b.dataset.ml);return;}
+    if(b.dataset.pickml){
+      sheet.ml=+b.dataset.pickml;
+      els.sheetIn.querySelectorAll('[data-pickml]').forEach(c=>{const on=c===b;c.classList.toggle('on',on);c.setAttribute('aria-pressed',on);});
+      const l=$('[data-mllabel]',els.sheetIn);if(l)l.textContent=sheet.ml;
+      haptic();return;
+    }
+    if(b.hasAttribute('data-savebottle')){commitNew('bottle',sheet.ml);return;}
     if(b.dataset.mode){if(sheet.mode!==b.dataset.mode){sheet.mode=b.dataset.mode;renderNew();}return;}
     if(b.dataset.d&&b.closest('[data-role="dur"]')){sheet.dur=+b.dataset.d;renderNew();haptic();return;}
     if(b.dataset.dstep){sheet.dur=Math.max(durStep(sheet.type),Math.min(DUR_MAX,sheet.dur+(+b.dataset.dstep)));renderNew();haptic();return;}
