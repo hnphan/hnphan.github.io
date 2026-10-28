@@ -209,6 +209,8 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .amtchip.on{background:var(--soft);border-color:var(--c)}
 .amtchip.on .tag{color:var(--c)}
 .amtchip:active{transform:scale(.97)}
+.acts.savebar{grid-template-columns:64px 1fr 64px}
+.savebar .nb{height:auto;min-height:78px;border-radius:22px;font-size:19px}
 /* The final action row of every sheet stays pinned in reach, so the next step is never below the fold. */
 .sheet-in>.acts:last-child,.sheet-in>.foot:last-child{position:sticky;bottom:0;z-index:2;background:var(--surface);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -1px 0 var(--line)}
 .amt-show{display:flex;align-items:baseline;justify-content:center;gap:6px;border-radius:20px;background:var(--surface-2);font-size:15px;color:var(--muted);padding-top:18px}
@@ -624,8 +626,9 @@ function renderNew(){
     h+=`<div data-slot="adj" style="${cv(type)}"></div>`;
     h+=`<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">Amount</span><small>ml</small></div>
       <div class="acts four">${bottleAmounts().map(m=>`<button class="amtchip${m===sheet.ml?' on':''}" data-pickml="${m}" type="button" aria-pressed="${m===sheet.ml}"><span class="l">${m}</span>${m===u?'<span class="tag">usual</span>':''}</button>`).join('')}</div>
-      <p class="hint">Odd amount? Use −10 / +10 after saving</p></div>`;
-    h+=`<div class="acts" style="${cv(type)}"><button class="big" data-savebottle type="button"><span class="l">Save <span data-mllabel>${sheet.ml}</span> ml</span><span class="s" data-cap></span></button></div>`;
+      </div>`;
+    // Presets + stepper: −10 / +10 sit on either side of the Save button, next to the amount they change.
+    h+=`<div class="acts savebar" style="${cv(type)}"><button class="nb" data-mlnudge="-10" type="button" aria-label="10 ml less">−10</button><button class="big" data-savebottle type="button"><span class="l">Save <span data-mllabel>${sheet.ml}</span> ml</span><span class="s" data-cap></span></button><button class="nb" data-mlnudge="10" type="button" aria-label="10 ml more">+10</button></div>`;
     els.sheetIn.innerHTML=h;
     const adj=makeAdjuster({label:'When',get:()=>sheet.when,set:v=>{sheet.when=v;caps();}});
     $('[data-slot="adj"]',els.sheetIn).append(adj.el);adjusters=[adj];
@@ -684,7 +687,7 @@ function commitNew(sub,ml){
   S.entries.push(e);
   S.stats.push({m:S.method,s:Math.round((now-sheet.t0)/100)/10,adj:sheet.when!=null,at:now});
   save();closeSheet();renderMain();
-  if(ml) toast(bottleMsg(e),e.id,{ml:true});
+  if(ml) toast(bottleMsg(e)+(hadEx?' · examples cleared':''),e.id);
   else toast(msg+(hadEx?' · examples cleared':''),e.id);
 }
 
@@ -778,6 +781,12 @@ els.sheetIn.addEventListener('click',ev=>{
     if(b.dataset.pickml){
       sheet.ml=+b.dataset.pickml;
       els.sheetIn.querySelectorAll('[data-pickml]').forEach(c=>{const on=c===b;c.classList.toggle('on',on);c.setAttribute('aria-pressed',on);});
+      const l=$('[data-mllabel]',els.sheetIn);if(l)l.textContent=sheet.ml;
+      haptic();return;
+    }
+    if(b.dataset.mlnudge){
+      sheet.ml=Math.max(10,Math.min(400,sheet.ml+(+b.dataset.mlnudge)));
+      els.sheetIn.querySelectorAll('[data-pickml]').forEach(c=>{const on=+c.dataset.pickml===sheet.ml;c.classList.toggle('on',on);c.setAttribute('aria-pressed',on);});
       const l=$('[data-mllabel]',els.sheetIn);if(l)l.textContent=sheet.ml;
       haptic();return;
     }
