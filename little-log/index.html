@@ -435,7 +435,7 @@ function makeAdjuster({label,get,set,min}){
   // Chip pickers get a ±15 stepper around the chosen time: chips get close, the stepper gets exact.
   const hasStep=S.method==='chips'||S.method==='rail';
   el.innerHTML=`<div class="adj-head"><span class="lab">${label}</span></div>`+(hasStep
-    ?`<div class="adj-step"><button class="nb ts" data-ts="-3" type="button" aria-label="15 minutes earlier">−15</button><div class="adj-mid"><span class="adj-time"></span><span class="adj-ago"></span></div><button class="nb ts" data-ts="3" type="button" aria-label="15 minutes later">+15</button></div>`
+    ?`<div class="adj-step"><button class="nb ts" data-ts="-1" type="button" aria-label="15 minutes earlier">−15</button><div class="adj-mid"><span class="adj-time"></span><span class="adj-ago"></span></div><button class="nb ts" data-ts="1" type="button" aria-label="15 minutes later">+15</button></div>`
     :`<div class="adj-head"><span class="adj-time"></span><span class="adj-ago"></span></div>`)+`<div class="adj-body"></div>`;
   const body=$('.adj-body',el);
   const val=()=>get()??Date.now();
@@ -455,13 +455,15 @@ function makeAdjuster({label,get,set,min}){
     apply(v>Date.now()?null:v);
   }
   let refreshBody=()=>{};
+  const Q=15*MIN;
+  const stepQ=d=>{const v=val();const n=d<0?Math.ceil(v/Q)*Q-Q:Math.floor(v/Q)*Q+Q;apply(n>Date.now()?null:n);}; // snaps to :00 :15 :30 :45
   el.querySelectorAll('.ts').forEach(b=>{
     let t1=null,t2=null;const d=+b.dataset.ts;
     const stop=()=>{clearTimeout(t1);clearInterval(t2);t1=t2=null;};
-    b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId);}catch(_){}step(d);
-      t1=setTimeout(()=>{t2=setInterval(()=>step(d),170);},420);});
+    b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId);}catch(_){}stepQ(d);
+      t1=setTimeout(()=>{t2=setInterval(()=>stepQ(d),170);},420);});
     ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,stop));
-    b.addEventListener('click',e=>{if(e.detail===0)step(d);}); // keyboard
+    b.addEventListener('click',e=>{if(e.detail===0)stepQ(d);}); // keyboard
   });
 
   if(S.method==='chips'){
