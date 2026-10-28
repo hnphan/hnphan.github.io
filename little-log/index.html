@@ -137,6 +137,10 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 
 .adj{display:flex;flex-direction:column;gap:12px}
 .adj-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.adj-step{display:grid;grid-template-columns:64px 1fr 64px;gap:8px;align-items:stretch}
+.adj-step .nb{height:64px;font-size:18px;touch-action:none}
+.adj-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0}
+.adj-mid .adj-time{font-size:36px}
 .lab{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .adj-time{font-family:var(--font-display);font-weight:700;font-size:40px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
 .adj-ago{font-size:15px;color:var(--muted);font-weight:500}
@@ -428,7 +432,11 @@ els.toast.addEventListener('click',e=>{
 let adjusters=[];
 function makeAdjuster({label,get,set,min}){
   const el=document.createElement('div');el.className='adj';
-  el.innerHTML=`<div class="adj-head"><span class="lab">${label}</span></div><div class="adj-head"><span class="adj-time"></span><span class="adj-ago"></span></div><div class="adj-body"></div>`;
+  // Chip pickers get a ±15 stepper around the chosen time: chips get close, the stepper gets exact.
+  const hasStep=S.method==='chips'||S.method==='rail';
+  el.innerHTML=`<div class="adj-head"><span class="lab">${label}</span></div>`+(hasStep
+    ?`<div class="adj-step"><button class="nb ts" data-ts="-3" type="button" aria-label="15 minutes earlier">−15</button><div class="adj-mid"><span class="adj-time"></span><span class="adj-ago"></span></div><button class="nb ts" data-ts="3" type="button" aria-label="15 minutes later">+15</button></div>`
+    :`<div class="adj-head"><span class="adj-time"></span><span class="adj-ago"></span></div>`)+`<div class="adj-body"></div>`;
   const body=$('.adj-body',el);
   const val=()=>get()??Date.now();
   const api={el,busy:false,refresh};
@@ -447,6 +455,14 @@ function makeAdjuster({label,get,set,min}){
     apply(v>Date.now()?null:v);
   }
   let refreshBody=()=>{};
+  el.querySelectorAll('.ts').forEach(b=>{
+    let t1=null,t2=null;const d=+b.dataset.ts;
+    const stop=()=>{clearTimeout(t1);clearInterval(t2);t1=t2=null;};
+    b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId);}catch(_){}step(d);
+      t1=setTimeout(()=>{t2=setInterval(()=>step(d),170);},420);});
+    ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,stop));
+    b.addEventListener('click',e=>{if(e.detail===0)step(d);}); // keyboard
+  });
 
   if(S.method==='chips'){
     const CH=[0,5,10,15,20,30,45,60,90,120,180,240];
