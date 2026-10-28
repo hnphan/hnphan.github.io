@@ -137,6 +137,13 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 
 .adj{display:flex;flex-direction:column;gap:12px}
 .adj-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.when-row{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:0 16px;border-radius:18px;background:var(--surface-2);text-align:left}
+.when-row .lab{flex:none}
+.when-val{flex:1;min-width:0;font-family:var(--font-display);font-weight:700;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.when-cta{flex:none;font-weight:700;font-size:15px;color:var(--c);display:flex;align-items:center;gap:4px}
+.when-cta::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin:-4px 2px 0 2px}
+.when-row:active{transform:scale(.99)}
+.sheet-in>.acts:last-child::before,.sheet-in>.foot:last-child::before{content:"";position:absolute;left:0;right:0;top:-28px;height:28px;background:linear-gradient(to bottom,transparent,var(--surface));pointer-events:none}
 .adj-step{display:grid;grid-template-columns:64px 1fr 64px;gap:8px;align-items:stretch}
 .adj-step .nb{height:64px;font-size:18px;touch-action:none}
 .adj-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0}
@@ -649,7 +656,7 @@ function renderNew(){
     h+=`<div class="acts savebar" style="${cv(type)}"><button class="nb" data-mlnudge="-10" type="button" aria-label="10 ml less">−10</button><button class="big" data-savebottle type="button"><span class="l">Save <span data-mllabel>${sheet.ml}</span> ml</span><span class="s" data-cap></span></button><button class="nb" data-mlnudge="10" type="button" aria-label="10 ml more">+10</button></div>`;
     els.sheetIn.innerHTML=h;
     const adj=makeAdjuster({label:'When',get:()=>sheet.when,set:v=>{sheet.when=v;caps();}});
-    $('[data-slot="adj"]',els.sheetIn).append(adj.el);adjusters=[adj];
+    mountTime(adj);
     caps();
     return;
   }
@@ -672,8 +679,20 @@ function renderNew(){
   }
   els.sheetIn.innerHTML=h;
   const adj=makeAdjuster({label:type==='nappy'?'When':done?(type==='sleep'?'Woke up':'Ended'):'Started',get:()=>sheet.when,set:v=>{sheet.when=v;caps();}});
-  $('[data-slot="adj"]',els.sheetIn).append(adj.el);adjusters=[adj];
+  mountTime(adj);
   caps();
+}
+// New-log sheets start with the time folded to one line ("When: Now · Change"); tapping opens the full picker.
+function mountTime(adj){
+  const slot=$('[data-slot="adj"]',els.sheetIn);adjusters=[adj];
+  if(sheet.timeOpen){slot.append(adj.el);return;}
+  const label=$('.lab',adj.el).textContent;
+  slot.innerHTML=`<button class="when-row" data-opentime type="button"><span class="lab">${label}</span><span class="when-val num" data-whenval></span><span class="when-cta">Change</span></button>`;
+  updateWhen();
+}
+function updateWhen(){
+  const v=$('[data-whenval]',els.sheetIn);if(!v||!sheet)return;
+  v.textContent=sheet.when==null?'Now':`${clock(sheet.when)} · ${ago(sheet.when)}`;
 }
 function caps(){
   if(!sheet||sheet.kind!=='new')return;
@@ -795,6 +814,7 @@ els.sheetIn.addEventListener('click',ev=>{
   const b=ev.target.closest('button');if(!b||!sheet)return;
   if(b.hasAttribute('data-close')){closeSheet();return;}
   if(sheet.kind==='new'){
+    if(b.hasAttribute('data-opentime')){sheet.timeOpen=true;renderNew();haptic();return;}
     if(b.dataset.kind){if(sheet.feedKind!==b.dataset.kind){sheet.feedKind=b.dataset.kind;renderNew();}return;}
     if(b.dataset.pickml){
       sheet.ml=+b.dataset.pickml;
@@ -870,6 +890,7 @@ setInterval(()=>{
   document.querySelectorAll('[data-since]').forEach(el=>{el.textContent=elapsed(n-(+el.dataset.since));});
   adjusters.forEach(a=>{if(!a.busy)a.refresh();});
   if(sheet&&sheet.kind==='new'&&sheet.mode==='done')caps();
+  if(sheet&&sheet.kind==='new')updateWhen();
 },1000);
 setInterval(renderMain,15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderMain();});
