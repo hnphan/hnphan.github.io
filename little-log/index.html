@@ -236,6 +236,8 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .lrow.hr .la{color:var(--ink);font-weight:600}
 .lseg button{height:32px;font-size:12px;padding-inline:2px}
 .lrow.rel .lt{font-size:18px}
+.lstep{display:flex;align-items:center;gap:10px}
+.lstep .seg{flex:1}
 .lmark{display:flex;align-items:center;gap:8px;min-height:34px;padding-inline:14px 10px;border-radius:12px;font-size:13px;color:var(--muted);text-align:start;flex:none;margin-inline-start:18px;border-inline-start:2px solid var(--line);border-start-start-radius:0;border-end-start-radius:0}
 .lmark i{width:8px;height:8px;border-radius:50%;background:var(--ec);flex:none}
 .lmark b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
@@ -277,7 +279,7 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .acts.savebar{grid-template-columns:64px 1fr 64px}
 .savebar .nb{height:auto;min-height:78px;border-radius:22px;font-size:19px}
 /* The final action row of every sheet stays pinned in reach, so the next step is never below the fold. */
-.sheet-in>.acts:last-child,.sheet-in>.foot:last-child{position:sticky;bottom:0;z-index:2;background:var(--surface);padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -1px 0 var(--line)}
+.sheet-in>.acts:last-child,.sheet-in>.foot:last-child{position:sticky;bottom:calc(-16px - env(safe-area-inset-bottom,0px));z-index:2;background:var(--surface);padding-block:12px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -1px 0 var(--line)}
 .amt-show{display:flex;align-items:baseline;justify-content:center;gap:6px;border-radius:20px;background:var(--surface-2);font-size:15px;color:var(--muted);padding-top:18px}
 .amt-show b{font-family:var(--font-display);font-size:34px;color:var(--ink)}
 .big{min-height:78px;border-radius:22px;background:var(--c);color:var(--on-accent);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;padding:6px}
@@ -575,9 +577,9 @@ let adjusters=[];
 function makeAdjuster({label,get,set,min}){
   const el=document.createElement('div');el.className='adj';
   // Chip pickers get a ±15 stepper around the chosen time: chips get close, the stepper gets exact.
-  const hasStep=S.method==='chips'||S.method==='rail';
+  const hasStep=S.method==='chips'||S.method==='rail'||S.method==='list',fine=S.method==='list';
   el.innerHTML=`<div class="adj-head"><span class="lab">${label}</span></div>`+(hasStep
-    ?`<div class="adj-step"><button class="nb ts" data-ts="-1" type="button" aria-label="15 minutes earlier">${signed(-15)}</button><div class="adj-mid"><span class="adj-time"></span><span class="adj-ago"></span></div><button class="nb ts" data-ts="1" type="button" aria-label="15 minutes later">${signed(15)}</button></div>`
+    ?`<div class="adj-step"><button class="nb ts" data-ts="-1" type="button" aria-label="${fine?5:15} minutes earlier">${signed(fine?-5:-15)}</button><div class="adj-mid"><span class="adj-time"></span><span class="adj-ago"></span></div><button class="nb ts" data-ts="1" type="button" aria-label="${fine?5:15} minutes later">${signed(fine?5:15)}</button></div>`
     :`<div class="adj-head"><span class="adj-time"></span><span class="adj-ago"></span></div>`)+`<div class="adj-body"></div>`;
   const body=$('.adj-body',el);
   const val=()=>get()??Date.now();
@@ -602,10 +604,11 @@ function makeAdjuster({label,get,set,min}){
   el.querySelectorAll('.ts').forEach(b=>{
     let t1=null,t2=null;const d=+b.dataset.ts;
     const stop=()=>{clearTimeout(t1);clearInterval(t2);t1=t2=null;};
-    b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId);}catch(_){}stepQ(d);
-      t1=setTimeout(()=>{t2=setInterval(()=>stepQ(d),170);},420);});
+    const go=()=>{if(sheet&&sheet.pick)sheet.pick.adj=true;fine?step(d):stepQ(d);};
+    b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId);}catch(_){}go();
+      t1=setTimeout(()=>{t2=setInterval(go,170);},420);});
     ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,stop));
-    b.addEventListener('click',e=>{if(e.detail===0)stepQ(d);}); // keyboard
+    b.addEventListener('click',e=>{if(e.detail===0)go();}); // keyboard
   });
 
   if(S.method==='chips'){
@@ -687,7 +690,10 @@ function makeAdjuster({label,get,set,min}){
     // Row labels have three variants to compare: exact "ago" on every row, rough "ago" on hour rows only, or group headings.
     const LS={relative:'Ago + logs',groups:'Groups',hours:'Hour marks',exact:'Exact'};
     // "Ago + logs": rows are round "how long ago" steps with the clock small, and earlier logs sit between them as landmarks.
-    const OFFS=[15,30,45,60,75,90,105,120,150,180,210,240,300,360,420,480,540,600,660,720];
+    // Row spacing: "Scaled" grows with distance (memory gets fuzzier further back); fixed 5/10/15 are there to compare.
+    const STEPS={scaled:'Scaled',5:'5 min',10:'10 min',15:'15 min'};
+    const stepKey=()=>STEPS[S.listStep]?String(S.listStep):'scaled';
+    const offs=()=>{const k=stepKey();if(k==='scaled')return [5,10,15,20,30,45,60,75,90,105,120,150,180,210,240,300,360,420,480,540,600,660,720];const st=+k,a=[];for(let m=st;m<=720;m+=st)a.push(m);return a;};
     const relLabel=m=>isEn()?durLabel(m)+' ago':m<60?rtf().format(-m,'minute'):rtf().format(-(m/60),'hour');
     const landmarks=now=>{
       const skip=sheet&&sheet.kind==='edit'?sheet.id:null,out=[];
@@ -710,7 +716,7 @@ function makeAdjuster({label,get,set,min}){
       if(md==='relative'){
         const lm=landmarks(now);let i=0;
         const mark=x=>`<button class="lmark" data-t="${x.t}" style="--ec:var(--${x.type})" type="button"><i></i><b>${clock(x.t)}</b><span>${x.l}</span></button>`;
-        for(const m of OFFS){
+        for(const m of offs()){
           while(i<lm.length&&(now-lm[i].t)/MIN<m)rows+=mark(lm[i++]);
           rows+=`<button class="lrow rel" data-m="${m}" type="button"><span class="lt">${relLabel(m)}</span><span class="la"></span></button>`;
         }
@@ -722,6 +728,7 @@ function makeAdjuster({label,get,set,min}){
         rows+=`<button class="lrow${isHr&&md!=='groups'?' hr':''}" data-t="${t}" data-hr="${isHr?1:0}" type="button"><span class="lt">${clock(t)}</span><span class="la"></span></button>`;
       }
       body.innerHTML=`<div class="seg lseg" role="group" aria-label="Row labels">${Object.entries(LS).map(([k,v])=>`<button data-ls="${k}" class="${k===md?'on':''}" type="button">${v}</button>`).join('')}</div>
+        ${md==='relative'?`<div class="lstep"><span class="lab">Steps</span><div class="seg lseg" role="group" aria-label="Row steps">${Object.entries(STEPS).map(([k,v])=>`<button data-lstep="${k}" class="${k===stepKey()?'on':''}" type="button">${v}</button>`).join('')}</div></div>`:''}
         <div class="lst ls-${md}">${rows}</div><p class="hint">Scroll down to go further back</p>`;
       refreshBody();
       const box=$('.lst',body),on=$('.lrow.on,.lmark.on',body);
@@ -729,8 +736,11 @@ function makeAdjuster({label,get,set,min}){
     };
     body.addEventListener('click',e=>{
       const sb=e.target.closest('[data-ls]');if(sb){S.listStyle=sb.dataset.ls;save();build();haptic();return;}
+      const st=e.target.closest('[data-lstep]');if(st){S.listStep=st.dataset.lstep;save();build();haptic();return;}
       const b=e.target.closest('.lrow,.lmark');if(!b)return;
-      if(b.dataset.m)apply(Date.now()-(+b.dataset.m)*MIN);else apply(b.dataset.t==='now'?null:+b.dataset.t);
+      const track=sheet&&sheet.kind==='new';
+      if(b.dataset.m){if(track)sheet.pick={s:stepKey(),m:+b.dataset.m,adj:false};apply(Date.now()-(+b.dataset.m)*MIN);}
+      else{if(track)sheet.pick=b.dataset.t==='now'?null:{s:stepKey(),lm:true,adj:false};apply(b.dataset.t==='now'?null:+b.dataset.t);}
     });
     refreshBody=()=>{
       const now=Date.now(),md=mode();if(top!==null&&Math.floor(now/Q)*Q!==top&&!api.busy){build();return;}
@@ -988,7 +998,7 @@ function commitNew(sub,ml){
   else if(mode==='timer'){e={id:uid(),type,sub:sub||null,start:at,end:null,running:true};msg=`${T[type].label} timer started${sub?' · '+SUB[sub]:''}`;}
   else{e={id:uid(),type,sub:sub||null,start:at-sheet.dur*MIN,end:at};msg=`${T[type].label} logged · ${dur(sheet.dur*MIN)}`;}
   S.entries.push(e);
-  S.stats.push({f:S.flow||'one',m:S.method,s:Math.round((now-sheet.t0)/100)/10,adj:sheet.when!=null,at:now});
+  S.stats.push({lp:S.method==='list'&&sheet.pick?sheet.pick:null,f:S.flow||'one',m:S.method,s:Math.round((now-sheet.t0)/100)/10,adj:sheet.when!=null,at:now});
   save();closeSheet();renderMain();
   if(ml) toast(bottleMsg(e)+(hadEx?' · examples cleared':''),e.id);
   else toast(msg+(hadEx?' · examples cleared':''),e.id);
@@ -1086,6 +1096,9 @@ function renderTest(){
   ${(()=>{const FL={one:'One screen',steps:'Step by step'};
     const rr=Object.keys(FL).map(k=>{const all=S.stats.filter(x=>(x.f||'one')===k);const a=all.filter(x=>x.adj).map(x=>x.s),n=all.filter(x=>!x.adj).map(x=>x.s);return {k,a,n};});
     return `<div style="overflow-x:auto"><table class="cmp"><thead><tr><th>Layout</th><th>Changed time</th><th>Left at now</th></tr></thead><tbody>${rr.map(r=>`<tr><td>${FL[r.k]}${r.k===(S.flow||'one')?' <span class="badge">in use</span>':''}</td><td>${f(median(r.a))} <span style="color:var(--muted)">· ${r.a.length} logs</span></td><td>${f(median(r.n))} <span style="color:var(--muted)">· ${r.n.length}</span></td></tr>`).join('')}</tbody></table></div>`;})()}
+  ${(()=>{const ST={scaled:'Scaled',5:'5 min',10:'10 min',15:'15 min'};
+    const rr=Object.keys(ST).map(k=>{const ps=S.stats.filter(x=>x.lp&&String(x.lp.s)===k);const rows=ps.filter(x=>!x.lp.lm);const adj=ps.filter(x=>x.lp.adj).length;const far=rows.length?Math.max(...rows.map(x=>x.lp.m)):null;const md=median(rows.map(x=>x.lp.m));return {k,n:ps.length,adj,lm:ps.filter(x=>x.lp.lm).length,md,far};});
+    return `<p class="prose"><b>List steps.</b> Fine-tuned means you used the stepper after picking a row: often a sign the rows are too far apart.</p><div style="overflow-x:auto"><table class="cmp"><thead><tr><th>Steps</th><th>Picks</th><th>Fine-tuned</th><th>Typical row</th><th>Furthest</th></tr></thead><tbody>${rr.map(r=>`<tr><td>${ST[r.k]}${r.k===(ST[S.listStep]?String(S.listStep):'scaled')?' <span class="badge">in use</span>':''}</td><td>${r.n}${r.lm?` <span style="color:var(--muted)">· ${r.lm} landmark</span>`:''}</td><td>${r.n?Math.round(r.adj/r.n*100)+'%':'—'}</td><td>${r.md==null?'—':durLabel(Math.round(r.md))}</td><td>${r.far==null?'—':durLabel(r.far)}</td></tr>`).join('')}</tbody></table></div>`;})()}
   <p class="prose">Times are medians. Try each picker for a day or so in real conditions, one-handed if you can, then compare.</p>
   <ul class="howto">
     <li><b>Chips</b> Tap how long ago: 5m, 15m, 1h and so on.</li>
