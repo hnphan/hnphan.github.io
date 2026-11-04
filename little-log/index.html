@@ -234,7 +234,14 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .lrow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding-inline:14px;border-radius:14px;text-align:start;flex:none}
 .lrow.hr{box-shadow:inset 0 1px 0 var(--line)}
 .lrow.hr .la{color:var(--ink);font-weight:600}
-.lseg button{height:32px;font-size:12px}
+.lseg button{height:32px;font-size:12px;padding-inline:2px}
+.lrow.rel .lt{font-size:18px}
+.lmark{display:flex;align-items:center;gap:8px;min-height:34px;padding-inline:14px 10px;border-radius:12px;font-size:13px;color:var(--muted);text-align:start;flex:none;margin-inline-start:18px;border-inline-start:2px solid var(--line);border-start-start-radius:0;border-end-start-radius:0}
+.lmark i{width:8px;height:8px;border-radius:50%;background:var(--ec);flex:none}
+.lmark b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.lmark span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lmark.on{background:var(--ink);color:var(--bg)}
+.lmark.on b{color:var(--bg)}
 .lgrp{position:sticky;top:-4px;z-index:1;background:var(--surface-2);padding:10px 14px 4px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);flex:none}
 .lgrp:not(:first-of-type){box-shadow:0 -1px 0 var(--line)}
 .lrow .lt{font-family:var(--font-display);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
@@ -678,14 +685,37 @@ function makeAdjuster({label,get,set,min}){
   else if(S.method==='list'){
     // Direction-neutral: quarter hours in a vertical list, newest at the top, like a feed. Reads the same in every language.
     // Row labels have three variants to compare: exact "ago" on every row, rough "ago" on hour rows only, or group headings.
-    const LS={groups:'Groups',hours:'Hour marks',exact:'Exact'};
+    const LS={relative:'Ago + logs',groups:'Groups',hours:'Hour marks',exact:'Exact'};
+    // "Ago + logs": rows are round "how long ago" steps with the clock small, and earlier logs sit between them as landmarks.
+    const OFFS=[15,30,45,60,75,90,105,120,150,180,210,240,300,360,420,480,540,600,660,720];
+    const relLabel=m=>isEn()?durLabel(m)+' ago':m<60?rtf().format(-m,'minute'):rtf().format(-(m/60),'hour');
+    const landmarks=now=>{
+      const skip=sheet&&sheet.kind==='edit'?sheet.id:null,out=[];
+      for(const e of S.entries){
+        if(e.id===skip)continue;
+        if(e.type==='sleep'){out.push({t:e.start,type:'sleep',l:'Fell asleep'});if(!e.running&&e.end)out.push({t:e.end,type:'sleep',l:'Woke up'});}
+        else if(e.type==='feed')out.push({t:e.start,type:'feed',l:e.sub==='bottle'?'Bottle'+(e.ml?' '+amtFmt(e.ml):''):'Feed'+(e.sub?' · '+SUB[e.sub]:'')+(e.running?' (started)':'')});
+        else out.push({t:e.start,type:'nappy',l:T.nappy.label+' · '+SUB[e.sub]});
+      }
+      return out.filter(x=>now-x.t>2.5*MIN&&now-x.t<=12*H).sort((a,b)=>b.t-a.t);
+    };
     const BUCKETS=[[60,'Last hour'],[120,'1–2 hours ago'],[180,'2–3 hours ago'],[360,'3–6 hours ago'],[720,'6–12 hours ago']];
     let top=null;
-    const mode=()=>LS[S.listStyle]?S.listStyle:'groups';
+    const mode=()=>LS[S.listStyle]?S.listStyle:'relative';
     const build=()=>{
       const now=Date.now(),md=mode();top=Math.floor(now/Q)*Q;
-      let rows=`<button class="lrow" data-t="now" type="button"><span class="lt"></span><span class="la">${cap(nowWord())}</span></button>`,bucket=-1;
-      for(let t=top;t>now-12*H;t-=Q){
+      let rows=md==='relative'
+        ?`<button class="lrow rel" data-t="now" type="button"><span class="lt">${cap(nowWord())}</span><span class="la"></span></button>`
+        :`<button class="lrow" data-t="now" type="button"><span class="lt"></span><span class="la">${cap(nowWord())}</span></button>`,bucket=-1;
+      if(md==='relative'){
+        const lm=landmarks(now);let i=0;
+        const mark=x=>`<button class="lmark" data-t="${x.t}" style="--ec:var(--${x.type})" type="button"><i></i><b>${clock(x.t)}</b><span>${x.l}</span></button>`;
+        for(const m of OFFS){
+          while(i<lm.length&&(now-lm[i].t)/MIN<m)rows+=mark(lm[i++]);
+          rows+=`<button class="lrow rel" data-m="${m}" type="button"><span class="lt">${relLabel(m)}</span><span class="la"></span></button>`;
+        }
+      }
+      else for(let t=top;t>now-12*H;t-=Q){
         if(now-t<2.5*MIN)continue;
         if(md==='groups'){const bi=BUCKETS.findIndex(([lim])=>(now-t)/MIN<lim);if(bi!==bucket){bucket=bi;rows+=`<div class="lgrp">${BUCKETS[bi][1]}</div>`;}}
         const isHr=new Date(t).getMinutes()===0;
@@ -694,19 +724,22 @@ function makeAdjuster({label,get,set,min}){
       body.innerHTML=`<div class="seg lseg" role="group" aria-label="Row labels">${Object.entries(LS).map(([k,v])=>`<button data-ls="${k}" class="${k===md?'on':''}" type="button">${v}</button>`).join('')}</div>
         <div class="lst ls-${md}">${rows}</div><p class="hint">Scroll down to go further back</p>`;
       refreshBody();
-      const box=$('.lst',body),on=$('.lrow.on',body);
+      const box=$('.lst',body),on=$('.lrow.on,.lmark.on',body);
       if(on&&on.dataset.t!=='now')box.scrollTop=on.offsetTop-box.clientHeight/2+on.offsetHeight/2;
     };
     body.addEventListener('click',e=>{
       const sb=e.target.closest('[data-ls]');if(sb){S.listStyle=sb.dataset.ls;save();build();haptic();return;}
-      const b=e.target.closest('.lrow');if(b)apply(b.dataset.t==='now'?null:+b.dataset.t);
+      const b=e.target.closest('.lrow,.lmark');if(!b)return;
+      if(b.dataset.m)apply(Date.now()-(+b.dataset.m)*MIN);else apply(b.dataset.t==='now'?null:+b.dataset.t);
     });
     refreshBody=()=>{
       const now=Date.now(),md=mode();if(top!==null&&Math.floor(now/Q)*Q!==top&&!api.busy){build();return;}
       const g=get();
+      body.querySelectorAll('.lmark').forEach(b=>b.classList.toggle('on',g!=null&&Math.abs(g-(+b.dataset.t))<30000));
       body.querySelectorAll('.lrow').forEach(b=>{
         const t=b.dataset.t;
-        if(t==='now'){b.classList.toggle('on',g==null||now-g<45000);$('.lt',b).textContent=clock(now);return;}
+        if(t==='now'){b.classList.toggle('on',g==null||now-g<45000);$(md==='relative'?'.la':'.lt',b).textContent=clock(now);return;}
+        if(b.dataset.m){const m=+b.dataset.m;b.classList.toggle('on',g!=null&&Math.abs((now-g)/MIN-m)<0.75);b.disabled=!!(min&&now-m*MIN<min()-1000);$('.la',b).textContent=clock(now-m*MIN);return;}
         b.classList.toggle('on',g!=null&&Math.abs(g-(+t))<30000);
         b.disabled=!!(min&&+t<min()-1000);
         $('.la',b).textContent=md==='exact'?ago(+t):md==='hours'&&b.dataset.hr==='1'?approxAgo(+t):'';
@@ -1059,7 +1092,7 @@ function renderTest(){
     <li><b>Rail</b> Five chips with now on the right; More opens the full range to swipe back through.</li>
     <li><b>Nudge</b> Step 5 minutes at a time with big buttons, or drag the ruler.</li>
     <li><b>Timeline</b> Touch the spot on the last few hours where it happened.</li>
-    <li><b>List</b> Quarter hours in a vertical list, newest at the top. Works the same in any reading direction. Try its three row-label styles.</li>
+    <li><b>List</b> Quarter hours in a vertical list, newest at the top. Works the same in any reading direction. Default rows are round “how long ago” steps with your earlier logs as landmarks; three other label styles are there to compare.</li>
   </ul>
   <div class="foot"><button class="btn${sheet.armed?' danger armed':''}" data-wipe type="button">${sheet.armed?'Tap to confirm':'Delete all entries'}</button><button class="btn" data-reset type="button">Reset timings</button></div>`;
   els.sheetIn.innerHTML=h;adjusters=[];
