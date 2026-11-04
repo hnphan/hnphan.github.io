@@ -233,6 +233,10 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .lst{max-height:min(330px,42vh);overflow-y:auto;overscroll-behavior:contain;border-radius:18px;background:var(--surface-2);padding:4px;display:flex;flex-direction:column}
 .lrow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding-inline:14px;border-radius:14px;text-align:start;flex:none}
 .lrow.hr{box-shadow:inset 0 1px 0 var(--line)}
+.lrow.hr .la{color:var(--ink);font-weight:600}
+.lseg button{height:32px;font-size:12px}
+.lgrp{position:sticky;top:-4px;z-index:1;background:var(--surface-2);padding:10px 14px 4px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);flex:none}
+.lgrp:not(:first-of-type){box-shadow:0 -1px 0 var(--line)}
 .lrow .lt{font-family:var(--font-display);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
 .lrow .la{font-size:13px;color:var(--muted);white-space:nowrap}
 .lrow.on{background:var(--ink);color:var(--bg);box-shadow:none}
@@ -411,6 +415,13 @@ function lenFmt(m,disp='narrow'){
   const h=Math.floor(m/60),r=m%60;
   if(typeof Intl.DurationFormat==='function'){try{return memo('dur'+disp,()=>new Intl.DurationFormat(LOC,{style:disp})).format(r?{hours:h,minutes:r}:{hours:h});}catch(e){}}
   return r?unitFmt(h,'hour',disp)+' '+unitFmt(r,'minute',disp):unitFmt(h,'hour',disp);
+}
+// Rough "ago" that matches the precision of a quarter-hour pick: 5-minute steps under an hour, half hours to 3h, then hours.
+function approxAgo(ms){
+  const m=(Date.now()-ms)/MIN;let v,u;
+  if(m<55){v=Math.max(5,Math.round(m/5)*5);u='minute';}else if(m<180){v=Math.round(m/30)/2;u='hour';}else{v=Math.round(m/60);u='hour';}
+  if(isEn())return '~'+(u==='minute'?lenFmt(v):v%1?num(Math.floor(v))+'½h':lenFmt(v*60))+' ago';
+  return '~'+rtf().format(-v,u);
 }
 const nowWord=()=>isEn()?'now':rtf().format(0,'second');
 function shortDur(d){return lenFmt(Math.floor(d/MIN));}
@@ -666,29 +677,39 @@ function makeAdjuster({label,get,set,min}){
   }
   else if(S.method==='list'){
     // Direction-neutral: quarter hours in a vertical list, newest at the top, like a feed. Reads the same in every language.
+    // Row labels have three variants to compare: exact "ago" on every row, rough "ago" on hour rows only, or group headings.
+    const LS={groups:'Groups',hours:'Hour marks',exact:'Exact'};
+    const BUCKETS=[[60,'Last hour'],[120,'1–2 hours ago'],[180,'2–3 hours ago'],[360,'3–6 hours ago'],[720,'6–12 hours ago']];
     let top=null;
+    const mode=()=>LS[S.listStyle]?S.listStyle:'groups';
     const build=()=>{
-      const now=Date.now();top=Math.floor(now/Q)*Q;
-      let rows=`<button class="lrow" data-t="now" type="button"><span class="lt"></span><span class="la">${cap(nowWord())}</span></button>`;
+      const now=Date.now(),md=mode();top=Math.floor(now/Q)*Q;
+      let rows=`<button class="lrow" data-t="now" type="button"><span class="lt"></span><span class="la">${cap(nowWord())}</span></button>`,bucket=-1;
       for(let t=top;t>now-12*H;t-=Q){
         if(now-t<2.5*MIN)continue;
-        rows+=`<button class="lrow${new Date(t).getMinutes()===0?' hr':''}" data-t="${t}" type="button"><span class="lt">${clock(t)}</span><span class="la"></span></button>`;
+        if(md==='groups'){const bi=BUCKETS.findIndex(([lim])=>(now-t)/MIN<lim);if(bi!==bucket){bucket=bi;rows+=`<div class="lgrp">${BUCKETS[bi][1]}</div>`;}}
+        const isHr=new Date(t).getMinutes()===0;
+        rows+=`<button class="lrow${isHr&&md!=='groups'?' hr':''}" data-t="${t}" data-hr="${isHr?1:0}" type="button"><span class="lt">${clock(t)}</span><span class="la"></span></button>`;
       }
-      body.innerHTML=`<div class="lst">${rows}</div><p class="hint">Scroll down to go further back</p>`;
+      body.innerHTML=`<div class="seg lseg" role="group" aria-label="Row labels">${Object.entries(LS).map(([k,v])=>`<button data-ls="${k}" class="${k===md?'on':''}" type="button">${v}</button>`).join('')}</div>
+        <div class="lst ls-${md}">${rows}</div><p class="hint">Scroll down to go further back</p>`;
       refreshBody();
       const box=$('.lst',body),on=$('.lrow.on',body);
       if(on&&on.dataset.t!=='now')box.scrollTop=on.offsetTop-box.clientHeight/2+on.offsetHeight/2;
     };
-    body.addEventListener('click',e=>{const b=e.target.closest('.lrow');if(b)apply(b.dataset.t==='now'?null:+b.dataset.t);});
+    body.addEventListener('click',e=>{
+      const sb=e.target.closest('[data-ls]');if(sb){S.listStyle=sb.dataset.ls;save();build();haptic();return;}
+      const b=e.target.closest('.lrow');if(b)apply(b.dataset.t==='now'?null:+b.dataset.t);
+    });
     refreshBody=()=>{
-      const now=Date.now();if(top!==null&&Math.floor(now/Q)*Q!==top&&!api.busy){build();return;}
+      const now=Date.now(),md=mode();if(top!==null&&Math.floor(now/Q)*Q!==top&&!api.busy){build();return;}
       const g=get();
       body.querySelectorAll('.lrow').forEach(b=>{
         const t=b.dataset.t;
         if(t==='now'){b.classList.toggle('on',g==null||now-g<45000);$('.lt',b).textContent=clock(now);return;}
         b.classList.toggle('on',g!=null&&Math.abs(g-(+t))<30000);
         b.disabled=!!(min&&+t<min()-1000);
-        $('.la',b).textContent=ago(+t);
+        $('.la',b).textContent=md==='exact'?ago(+t):md==='hours'&&b.dataset.hr==='1'?approxAgo(+t):'';
       });
     };
     build();
@@ -1038,7 +1059,7 @@ function renderTest(){
     <li><b>Rail</b> Five chips with now on the right; More opens the full range to swipe back through.</li>
     <li><b>Nudge</b> Step 5 minutes at a time with big buttons, or drag the ruler.</li>
     <li><b>Timeline</b> Touch the spot on the last few hours where it happened.</li>
-    <li><b>List</b> Quarter hours in a vertical list, newest at the top. Works the same in any reading direction.</li>
+    <li><b>List</b> Quarter hours in a vertical list, newest at the top. Works the same in any reading direction. Try its three row-label styles.</li>
   </ul>
   <div class="foot"><button class="btn${sheet.armed?' danger armed':''}" data-wipe type="button">${sheet.armed?'Tap to confirm':'Delete all entries'}</button><button class="btn" data-reset type="button">Reset timings</button></div>`;
   els.sheetIn.innerHTML=h;adjusters=[];
