@@ -90,8 +90,9 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .tile .k{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--c)}
 .tile .v{font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .s{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .v.long{font-size:16px;line-height:1.7}
 .tile.run{background:var(--soft);border-color:transparent}
-.tile.run .k::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c);margin-right:6px;vertical-align:1px;animation:pulse 1.6s ease-in-out infinite}
+.tile.run .k::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c);margin-inline-end:6px;vertical-align:1px;animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.25}}
 
 .examples{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:8px 8px 8px 12px}
@@ -100,7 +101,7 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 
 .log{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;margin-inline:-6px;padding-inline:6px;padding-bottom:8px}
 .day{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 4px 6px}
-.item{width:100%;display:grid;grid-template-columns:56px 10px 1fr auto;align-items:center;gap:10px;text-align:left;padding:11px 8px;border-radius:14px}
+.item{width:100%;display:grid;grid-template-columns:56px 10px 1fr auto;align-items:center;gap:10px;text-align:start;padding:11px 8px;border-radius:14px}
 .item:active{background:var(--surface-2)}
 .item+.item{border-top:1px solid var(--line)}
 .it-time{font-family:var(--font-display);font-weight:500;font-size:16px;font-variant-numeric:tabular-nums}
@@ -109,7 +110,7 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .it-title{font-weight:600;font-size:15px}
 .it-meta{font-size:13px;color:var(--muted)}
 .it-ago{font-size:13px;color:var(--muted);white-space:nowrap}
-.badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 5px;margin-left:6px;vertical-align:2px}
+.badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 5px;margin-inline-start:6px;vertical-align:2px}
 .empty{color:var(--muted);text-align:center;padding:40px 16px;line-height:1.5}
 
 .bar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding-block:6px 12px}
@@ -156,7 +157,7 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .choice .cbadge{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c);white-space:nowrap}
 .choice:active{transform:scale(.97);border-color:var(--c)}
 .step-q+[data-slot] .adj>.adj-head:first-child{display:none}
-.when-row{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:0 16px;border-radius:18px;background:var(--surface-2);text-align:left}
+.when-row{display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:0 16px;border-radius:18px;background:var(--surface-2);text-align:start}
 .when-row .lab{flex:none}
 .when-val{flex:1;min-width:0;font-family:var(--font-display);font-weight:700;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .when-cta{flex:none;font-weight:700;font-size:15px;color:var(--c);display:flex;align-items:center;gap:4px}
@@ -179,12 +180,12 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .chip{min-height:52px;border-radius:14px;background:var(--surface-2);font-weight:600;font-size:16px;font-variant-numeric:tabular-nums;position:relative}
 .chip.on{background:var(--ink);color:var(--bg)}
 .chip:disabled{opacity:.35}
-.chip.usual::after{content:"";position:absolute;top:7px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--c)}
+.chip.usual::after{content:"";position:absolute;top:7px;inset-inline-end:8px;width:6px;height:6px;border-radius:50%;background:var(--c)}
 
 .rail-scroll{margin-inline:-4px;padding:4px}
 .rail-row{position:relative;display:flex;gap:10px}
 .rail-row::before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:var(--line)}
-.rail-row::after{content:"";position:absolute;right:-4px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:var(--c)}
+.rail-row::after{content:"";position:absolute;inset-inline-end:-4px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:var(--c)}
 .rchip{position:relative;z-index:1;flex:1;min-width:0;min-height:62px;border-radius:15px;background:var(--surface-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-variant-numeric:tabular-nums}
 .rchip .rl{font-weight:700;font-size:17px}
 .rchip .rc,.rchip .rcm{font-size:11px;color:var(--muted)}
@@ -220,11 +221,34 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .tl-tick{position:absolute;bottom:0;width:1px;height:14px;background:var(--line)}
 .tl-tick.major{height:26px;background:var(--muted);opacity:.6}
 .tl-ev{position:absolute;top:14px;height:10px;min-width:10px;border-radius:5px;background:var(--ec);opacity:.75}
-.tl-thumb{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--c);pointer-events:none}
+.tl-thumb{position:absolute;top:0;bottom:0;width:3px;margin-inline-start:-1.5px;background:var(--c);pointer-events:none}
 .tl-thumb::after{content:"";position:absolute;left:50%;top:36px;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:var(--c);box-shadow:0 0 0 4px var(--surface)}
 .tl-labels{position:relative;height:16px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .tl-labels span{position:absolute;transform:translateX(-50%);white-space:nowrap}
 .tl-labels span.end{transform:translateX(-100%)}
+[dir="rtl"] .tl-labels span{transform:translateX(50%)}
+[dir="rtl"] .tl-labels span.end{transform:translateX(100%)}
+[dir="rtl"] .tl-tick,[dir="rtl"] .tl-thumb{margin-inline-start:0;margin-inline-end:-1.5px}
+[dir="rtl"] .step-head .back{transform:scaleX(-1)}
+.lst{max-height:min(330px,42vh);overflow-y:auto;overscroll-behavior:contain;border-radius:18px;background:var(--surface-2);padding:4px;display:flex;flex-direction:column}
+.lrow{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding-inline:14px;border-radius:14px;text-align:start;flex:none}
+.lrow.hr{box-shadow:inset 0 1px 0 var(--line)}
+.lrow .lt{font-family:var(--font-display);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+.lrow .la{font-size:13px;color:var(--muted);white-space:nowrap}
+.lrow.on{background:var(--ink);color:var(--bg);box-shadow:none}
+.lrow.on .la{color:var(--bg);opacity:.75}
+.lrow:disabled{opacity:.35}
+.pv{display:grid;gap:2px;background:var(--surface-2);border-radius:18px;padding:12px 16px}
+.pv-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-block:5px;font-size:14px;color:var(--muted)}
+.pv-row b{color:var(--ink);font-size:16px;font-variant-numeric:tabular-nums;text-align:end}
+.pv-note{margin:6px 0 0;font-size:12px;color:var(--muted)}
+.rg{display:flex;flex-direction:column;gap:8px}
+.rg .seg button{font-size:14px}
+.langs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.langs button{min-height:46px;border-radius:13px;background:var(--surface-2);font-weight:600;font-size:14px;padding-inline:6px}
+.langs button.on{background:var(--ink);color:var(--bg)}
+.dchip .dl,.rchip .rl{white-space:nowrap}
+@media (max-width:440px){#today{display:none}}
 
 .dur-head{display:flex;justify-content:space-between;align-items:baseline}
 .dur-head small{font-size:12px;color:var(--muted)}
@@ -264,7 +288,7 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .btn.danger.armed{background:var(--danger);color:var(--on-accent)}
 
 .cmp{width:100%;border-collapse:collapse;font-size:14px}
-.cmp th{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
+.cmp th{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:start;padding:6px 4px;border-bottom:1px solid var(--line)}
 .cmp td{padding:12px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .cmp td:first-child{font-weight:700}
 .cmp tr.best td{color:var(--nappy)}
@@ -274,7 +298,7 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
 .howto li b{display:inline-block;min-width:76px}
 
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 118px);width:min(488px,calc(100% - 32px));
-  display:flex;align-items:center;gap:6px;background:var(--ink);color:var(--bg);border-radius:16px;padding:6px 6px 6px 14px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  display:flex;align-items:center;gap:6px;background:var(--ink);color:var(--bg);border-radius:16px;padding-block:6px;padding-inline:14px 6px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .toast span{flex:1;min-width:0}
 .toast button{color:var(--bg);font-weight:700;padding:10px 12px;border-radius:11px}
 .toast button:active{background:rgba(127,127,127,.25)}
@@ -293,6 +317,9 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
       <button id="nightBtn" class="icon-btn" aria-label="Night light" aria-pressed="false">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
       </button>
+      <button id="regionBtn" class="icon-btn" aria-label="Region and format">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>
+      </button>
       <button id="testBtn" class="pill-btn">Compare</button>
     </div>
   </header>
@@ -303,6 +330,7 @@ button:focus-visible{outline:3px solid var(--sleep);outline-offset:2px}
       <button data-m="rail" type="button">Rail</button>
       <button data-m="nudge" type="button">Nudge</button>
       <button data-m="timeline" type="button">Timeline</button>
+      <button data-m="list" type="button">List</button>
     </div>
   </div>
   <div class="picker">
@@ -338,19 +366,81 @@ const T={
   nappy:{label:'Nappy',durs:[],dflt:0,subs:['wet','dirty','both']}
 };
 const SUB={L:'Left',R:'Right',bottle:'Bottle',wet:'Wet',dirty:'Dirty',both:'Wet + dirty'};
-const METHODS={chips:'Chips',rail:'Rail',nudge:'Nudge',timeline:'Timeline'};
+const METHODS={chips:'Chips',rail:'Rail',nudge:'Nudge',timeline:'Timeline',list:'List'};
 const $=(s,el=document)=>el.querySelector(s);
 const cv=t=>`--c:var(--${t});--soft:var(--${t}-soft)`;
 const uid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36);
 const pad=n=>String(n).padStart(2,'0');
 const median=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;};
-const clock=ms=>new Date(ms).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
-function shortDur(d){const m=Math.max(0,Math.floor(d/MIN));if(m<60)return m+'m';const h=Math.floor(m/60),r=m%60;return r?`${h}h ${r}m`:`${h}h`;}
-function dur(d){const m=Math.max(0,Math.round(d/MIN));if(m<60)return m+' min';const h=Math.floor(m/60),r=m%60;return r?`${h}h ${r}m`:`${h}h`;}
-const ago=ms=>Date.now()-ms<MIN?'just now':shortDur(Date.now()-ms)+' ago';
-function elapsed(d){const s=Math.max(0,Math.floor(d/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`;}
-const chipLabel=m=>m===0?'Now':m===90?'1½h':m>=60&&m%60===0?(m/60)+'h':m+'m';
-const durLabel=m=>{if(m<60)return m+'m';const h=Math.floor(m/60),r=m%60;return r===0?h+'h':r===30?h+'½h':h+'h'+pad(r);};
+/* ---------- Locale: formats, units, wording and reading direction ---------- */
+// Everything shown as a time, length, number or amount goes through these, so it follows the region.
+// The app's own words stay English in this prototype; a translated build would swap those separately.
+const RTL_LANGS=['ar','he','fa','ur','yi','ps','ckb','dv','sd','ug'];
+let LOC='en-GB',HC=null,UNIT='ml',WORD='nappy',DIR='ltr';
+const FC={};
+const memo=(k,mk)=>FC[k]||(FC[k]=mk());
+function resolveLocale(){
+  const L=S.loc||{};
+  let tag=L.lang&&L.lang!=='auto'?L.lang:((navigator.languages&&navigator.languages[0])||navigator.language||'en-GB');
+  try{tag=Intl.getCanonicalLocales(tag)[0]||'en-GB';}catch(e){tag='en-GB';}
+  LOC=tag;
+  let region='';try{region=new Intl.Locale(tag).maximize().region||'';}catch(e){}
+  const lang=tag.split('-')[0];
+  HC=L.clock==='h12'||L.clock==='h23'?L.clock:null;
+  UNIT=L.units==='ml'||L.units==='oz'?L.units:(['US','LR','MM'].includes(region)?'oz':'ml');
+  WORD=L.word==='nappy'||L.word==='diaper'?L.word:(['US','CA','PH'].includes(region)?'diaper':'nappy');
+  DIR=L.dir==='ltr'||L.dir==='rtl'?L.dir:(RTL_LANGS.includes(lang)?'rtl':'ltr');
+  for(const k in FC)delete FC[k];
+  document.documentElement.lang=LOC;document.documentElement.dir=DIR;
+  T.nappy.label=WORD==='diaper'?'Diaper':'Nappy';
+}
+const isEn=()=>LOC.startsWith('en');
+const nf=(o={})=>memo('n'+JSON.stringify(o),()=>new Intl.NumberFormat(LOC,o));
+const num=(n,o)=>nf(o).format(n);
+const signed=n=>(n<0?'−':'+')+num(Math.abs(n));
+const arrow=()=>DIR==='rtl'?'←':'→';
+const cap=t=>t?t.charAt(0).toLocaleUpperCase(LOC)+t.slice(1):t;
+const clock=ms=>memo('clock',()=>new Intl.DateTimeFormat(LOC,Object.assign({hour:'numeric',minute:'2-digit'},HC?{hour12:HC==='h12'}:{}))).format(ms);
+const dateFmt=(ms,o)=>memo('d'+JSON.stringify(o),()=>new Intl.DateTimeFormat(LOC,o)).format(ms);
+const unitFmt=(n,unit,disp)=>memo('u'+unit+disp,()=>new Intl.NumberFormat(LOC,{style:'unit',unit,unitDisplay:disp})).format(n);
+const rtf=()=>memo('rtf',()=>new Intl.RelativeTimeFormat(LOC,{numeric:'auto',style:'narrow'}));
+// A length in minutes: "5m", "2h 30m" in English, "5分", "2時間30分" in Japanese, using the platform's own unit names.
+function lenFmt(m,disp='narrow'){
+  m=Math.max(0,Math.round(m));
+  if(m<60)return unitFmt(m,'minute',disp);
+  const h=Math.floor(m/60),r=m%60;
+  if(typeof Intl.DurationFormat==='function'){try{return memo('dur'+disp,()=>new Intl.DurationFormat(LOC,{style:disp})).format(r?{hours:h,minutes:r}:{hours:h});}catch(e){}}
+  return r?unitFmt(h,'hour',disp)+' '+unitFmt(r,'minute',disp):unitFmt(h,'hour',disp);
+}
+const nowWord=()=>isEn()?'now':rtf().format(0,'second');
+function shortDur(d){return lenFmt(Math.floor(d/MIN));}
+function dur(d){const m=Math.round(d/MIN);return lenFmt(m,m<60?'short':'narrow');}
+function ago(ms){
+  const m=Math.floor((Date.now()-ms)/MIN);
+  if(isEn())return m<1?'just now':lenFmt(m)+' ago';
+  if(m<1)return nowWord();
+  return m<60?rtf().format(-m,'minute'):rtf().format(-Math.round(m/30)/2,'hour');
+}
+function elapsed(d){
+  const s=Math.max(0,Math.floor(d/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;
+  const n1=v=>num(v,{useGrouping:false}),n2=v=>num(v,{minimumIntegerDigits:2,useGrouping:false});
+  return h?`${n1(h)}:${n2(m)}:${n2(x)}`:`${n1(m)}:${n2(x)}`;
+}
+const durLabel=m=>isEn()&&m>=60&&m%60===30?num(Math.floor(m/60))+'½h':lenFmt(m);
+const chipLabel=m=>m===0?cap(nowWord()):durLabel(m);
+/* Bottle amounts are stored in ml; shown in ml or fl oz with presets that make sense in each. */
+const OZ=29.5735;
+const toUnit=ml=>UNIT==='oz'?Math.round(ml/OZ*2)/2:Math.round(ml);
+const snapAmt=ml=>UNIT==='oz'?+(Math.round(ml/OZ*2)/2*OZ).toFixed(2):Math.round(ml);
+const amtStep=()=>UNIT==='oz'?OZ/2:10;
+const amtStepLabel=sg=>UNIT==='oz'?(sg<0?'−':'+')+'½':signed(sg*10);
+const clampAmt=ml=>Math.max(snapAmt(amtStep()),Math.min(UNIT==='oz'?snapAmt(14*OZ):400,ml));
+const amtNum=ml=>num(toUnit(ml),{maximumFractionDigits:1});
+const amtFmt=ml=>memo('amt'+UNIT,()=>new Intl.NumberFormat(LOC,{style:'unit',unit:UNIT==='oz'?'fluid-ounce':'milliliter',unitDisplay:'short',maximumFractionDigits:1})).format(toUnit(ml));
+const unitName=()=>{try{return (memo('amt'+UNIT,()=>new Intl.NumberFormat(LOC,{style:'unit',unit:UNIT==='oz'?'fluid-ounce':'milliliter',unitDisplay:'short',maximumFractionDigits:1})).formatToParts(1).find(x=>x.type==='unit')||{}).value||UNIT;}catch(e){return UNIT;}};
+const baseAmounts=()=>UNIT==='oz'?[1,2,3,4,5,6,7,8].map(o=>snapAmt(o*OZ)):T.feed.amounts;
+const dfltAmt=()=>UNIT==='oz'?snapAmt(3*OZ):T.feed.dfltMl;
+const nappyWord=()=>T.nappy.label.toLowerCase();
 const durStep=t=>T[t].step||5;
 const DUR_MAX=16*60;
 function haptic(){try{navigator.vibrate&&navigator.vibrate(8);}catch(e){}}
@@ -382,36 +472,36 @@ function applyPrefs(){
 
 /* ---------- main screen ---------- */
 function renderMain(){
-  $('#today').textContent=new Date().toLocaleDateString([], {weekday:'short',day:'numeric',month:'short'});
+  $('#today').textContent=dateFmt(Date.now(),{weekday:'short',day:'numeric',month:'short'});
   // tiles
-  const tile=(t,k,v,s,run,since)=>`<div class="tile${run?' run':''}" style="${cv(t)}"><span class="k">${k}</span><span class="v num"${since?` data-since="${since}"`:''}>${v}</span><span class="s">${s}</span></div>`;
+  const tile=(t,k,v,s,run,since)=>`<div class="tile${run?' run':''}" style="${cv(t)}"><span class="k">${k}</span><span class="v num${String(v).length>7?' long':''}"${since?` data-since="${since}"`:''}>${v}</span><span class="s">${s}</span></div>`;
   let h='';
   const rf=runningOf('feed'),lf=lastDone('feed');
   h+=rf?tile('feed','Feeding',elapsed(Date.now()-rf.start),rf.sub?SUB[rf.sub]:'timer running',true,rf.start)
-       :tile('feed','Feed',lf?shortDur(Date.now()-lf.start):'—',lf?`since last${lf.sub==='bottle'?' · '+(lf.ml?lf.ml+' ml':'bottle'):lf.sub?' · '+SUB[lf.sub]:''}`:'nothing yet');
+       :tile('feed','Feed',lf?shortDur(Date.now()-lf.start):'—',lf?`since last${lf.sub==='bottle'?' · '+(lf.ml?amtFmt(lf.ml):'bottle'):lf.sub?' · '+SUB[lf.sub]:''}`:'nothing yet');
   const rs=runningOf('sleep'),ls=lastDone('sleep');
   h+=rs?tile('sleep','Asleep',elapsed(Date.now()-rs.start),'since '+clock(rs.start),true,rs.start)
        :tile('sleep','Awake',ls?shortDur(Date.now()-ls.end):'—',ls?'woke '+clock(ls.end):'nothing yet');
   const ln=lastDone('nappy');
-  h+=tile('nappy','Nappy',ln?shortDur(Date.now()-ln.start):'—',ln?'since last · '+SUB[ln.sub]:'nothing yet');
+  h+=tile('nappy',T.nappy.label,ln?shortDur(Date.now()-ln.start):'—',ln?'since last · '+SUB[ln.sub]:'nothing yet');
   els.tiles.innerHTML=h;
 
   els.ex.hidden=!S.entries.some(e=>e.ex);
 
   // log
   const list=byStart();
-  if(!list.length){els.log.innerHTML='<p class="empty">Nothing logged yet.<br>Tap Feed, Sleep or Nappy below.</p>';}
+  if(!list.length){els.log.innerHTML=`<p class="empty">Nothing logged yet.<br>Tap Feed, Sleep or ${T.nappy.label} below.</p>`;}
   else{
     let out='',lastDay='';
     const mlByDay={};
     for(const e of list) if(e.sub==='bottle'&&e.ml){const d=dayLabel(e.start);mlByDay[d]=(mlByDay[d]||0)+e.ml;}
     for(const e of list){
       const d=dayLabel(e.start);
-      if(d!==lastDay){out+=`<div class="day">${d}${mlByDay[d]?` · ${mlByDay[d]} ml bottle`:''}</div>`;lastDay=d;}
+      if(d!==lastDay){out+=`<div class="day">${d}${mlByDay[d]?` · ${amtFmt(mlByDay[d])} bottle`:''}</div>`;lastDay=d;}
       const title=T[e.type].label+(e.type==='nappy'?' · '+SUB[e.sub]:e.sub?' · '+SUB[e.sub]:'');
       let meta;
       if(e.running) meta=`<span class="num" data-since="${e.start}">${elapsed(Date.now()-e.start)}</span> · running`;
-      else if(e.sub==='bottle') meta=e.ml?e.ml+' ml':'';
+      else if(e.sub==='bottle') meta=e.ml?amtFmt(e.ml):'';
       else if(e.type==='nappy') meta='';
       else meta=`${dur(e.end-e.start)} · until ${clock(e.end)}`;
       out+=`<button class="item" data-id="${e.id}" style="${cv(e.type)}" type="button">
@@ -433,13 +523,13 @@ function dayLabel(ms){
   const t=new Date(),s=new Date(t.getFullYear(),t.getMonth(),t.getDate()).getTime();
   if(ms>=s)return 'Today';
   if(ms>=s-86400000)return 'Yesterday';
-  return new Date(ms).toLocaleDateString([], {weekday:'long',day:'numeric',month:'short'});
+  return dateFmt(ms,{weekday:'long',day:'numeric',month:'short'});
 }
 
 /* ---------- undo + toast ---------- */
 let undoState=null,toastTimer=null;
 const snapshot=()=>{undoState=JSON.stringify(S.entries);};
-const bottleMsg=e=>`Bottle <b class="num">${e.ml}</b> ml · ${clock(e.start)}`;
+const bottleMsg=e=>`Bottle <b class="num">${amtFmt(e.ml)}</b> · ${clock(e.start)}`;
 function armToast(ms){clearTimeout(toastTimer);toastTimer=setTimeout(()=>{els.toast.hidden=true;},ms);}
 function toast(msg,id,opts={}){
   els.toast.classList.toggle('tune',!!opts.ml);
@@ -469,7 +559,7 @@ function makeAdjuster({label,get,set,min}){
   // Chip pickers get a ±15 stepper around the chosen time: chips get close, the stepper gets exact.
   const hasStep=S.method==='chips'||S.method==='rail';
   el.innerHTML=`<div class="adj-head"><span class="lab">${label}</span></div>`+(hasStep
-    ?`<div class="adj-step"><button class="nb ts" data-ts="-1" type="button" aria-label="15 minutes earlier">−15</button><div class="adj-mid"><span class="adj-time"></span><span class="adj-ago"></span></div><button class="nb ts" data-ts="1" type="button" aria-label="15 minutes later">+15</button></div>`
+    ?`<div class="adj-step"><button class="nb ts" data-ts="-1" type="button" aria-label="15 minutes earlier">${signed(-15)}</button><div class="adj-mid"><span class="adj-time"></span><span class="adj-ago"></span></div><button class="nb ts" data-ts="1" type="button" aria-label="15 minutes later">${signed(15)}</button></div>`
     :`<div class="adj-head"><span class="adj-time"></span><span class="adj-ago"></span></div>`)+`<div class="adj-body"></div>`;
   const body=$('.adj-body',el);
   const val=()=>get()??Date.now();
@@ -536,11 +626,11 @@ function makeAdjuster({label,get,set,min}){
         ${expanded?'':'<button class="rchip more" data-more type="button"><span class="rl">More</span><span class="rcm">earlier</span></button>'}
         ${list.map(m=>`<button class="rchip" data-m="${m}" type="button"><span class="rl">${chipLabel(m)}</span><span class="rc"></span></button>`).join('')}
       </div></div></div>
-      <p class="hint">${expanded?'Swipe right to go further back · <button class="link" data-less type="button">Show fewer</button>':'Further left is further back'}</p>`;
+      <p class="hint">${expanded?`Swipe ${DIR==='rtl'?'left':'right'} to go further back · <button class="link" data-less type="button">Show fewer</button>`:`Further ${DIR==='rtl'?'right':'left'} is further back`}</p>`;
       refreshBody();
-      if(expanded){
-        const sc=$('.rail-scroll',body),on=$('.rchip.on',body);
-        sc.scrollLeft=on?on.offsetLeft-sc.clientWidth/2+on.offsetWidth/2:sc.scrollWidth;
+      if(expanded){ // centre the chosen chip, or the "now" end; works in either reading direction
+        const sc=$('.rail-scroll',body),on=$('.rchip.on',body)||$('.rchip[data-m="0"]',body);
+        if(on){const r=on.getBoundingClientRect(),q=sc.getBoundingClientRect();sc.scrollLeft+=(r.left+r.width/2)-(q.left+q.width/2);}
       }
     };
     body.addEventListener('click',e=>{
@@ -552,7 +642,7 @@ function makeAdjuster({label,get,set,min}){
     build();
   }
   else if(S.method==='nudge'){
-    body.innerHTML=`<div class="nudge"><button class="nb" data-d="-1" type="button" aria-label="5 minutes earlier">−5</button><div class="jog" aria-hidden="true"><div class="jog-needle"></div></div><button class="nb" data-d="1" type="button" aria-label="5 minutes later">+5</button></div><p class="hint">Hold a button, or drag the ruler sideways</p>`;
+    body.innerHTML=`<div class="nudge"><button class="nb" data-d="-1" type="button" aria-label="5 minutes earlier">${signed(-5)}</button><div class="jog" aria-hidden="true"><div class="jog-needle"></div></div><button class="nb" data-d="1" type="button" aria-label="5 minutes later">${signed(5)}</button></div><p class="hint">Hold a button, or drag the ruler sideways</p>`;
     body.querySelectorAll('.nb').forEach(b=>{
       let t1=null,t2=null,count=0;
       const d=+b.dataset.d;
@@ -568,38 +658,69 @@ function makeAdjuster({label,get,set,min}){
       if(!api.busy)return;
       const dx=e.clientX-lastX;lastX=e.clientX;acc+=dx;off+=dx;
       jog.style.backgroundPosition=`${off}px 100%, ${off}px 100%`;
-      while(acc>=16){acc-=16;step(-1);}   // drag right reveals earlier times
-      while(acc<=-16){acc+=16;step(1);}
+      const back=DIR==='rtl'?-1:1; // dragging towards the past side reveals earlier times
+      while(acc*back>=16){acc-=16*back;step(-1);}
+      while(acc*back<=-16){acc+=16*back;step(1);}
     });
     ['pointerup','pointercancel'].forEach(ev=>jog.addEventListener(ev,()=>{api.busy=false;}));
   }
+  else if(S.method==='list'){
+    // Direction-neutral: quarter hours in a vertical list, newest at the top, like a feed. Reads the same in every language.
+    let top=null;
+    const build=()=>{
+      const now=Date.now();top=Math.floor(now/Q)*Q;
+      let rows=`<button class="lrow" data-t="now" type="button"><span class="lt"></span><span class="la">${cap(nowWord())}</span></button>`;
+      for(let t=top;t>now-12*H;t-=Q){
+        if(now-t<2.5*MIN)continue;
+        rows+=`<button class="lrow${new Date(t).getMinutes()===0?' hr':''}" data-t="${t}" type="button"><span class="lt">${clock(t)}</span><span class="la"></span></button>`;
+      }
+      body.innerHTML=`<div class="lst">${rows}</div><p class="hint">Scroll down to go further back</p>`;
+      refreshBody();
+      const box=$('.lst',body),on=$('.lrow.on',body);
+      if(on&&on.dataset.t!=='now')box.scrollTop=on.offsetTop-box.clientHeight/2+on.offsetHeight/2;
+    };
+    body.addEventListener('click',e=>{const b=e.target.closest('.lrow');if(b)apply(b.dataset.t==='now'?null:+b.dataset.t);});
+    refreshBody=()=>{
+      const now=Date.now();if(top!==null&&Math.floor(now/Q)*Q!==top&&!api.busy){build();return;}
+      const g=get();
+      body.querySelectorAll('.lrow').forEach(b=>{
+        const t=b.dataset.t;
+        if(t==='now'){b.classList.toggle('on',g==null||now-g<45000);$('.lt',b).textContent=clock(now);return;}
+        b.classList.toggle('on',g!=null&&Math.abs(g-(+t))<30000);
+        b.disabled=!!(min&&+t<min()-1000);
+        $('.la',b).textContent=ago(+t);
+      });
+    };
+    build();
+  }
   else{ // timeline
-    body.innerHTML=`<div class="tl"><div class="tl-track"><div class="tl-marks"></div><div class="tl-thumb"></div></div><div class="tl-labels"></div></div><p class="hint">Touch the line where it happened · right edge is now</p>`;
+    body.innerHTML=`<div class="tl"><div class="tl-track"><div class="tl-marks"></div><div class="tl-thumb"></div></div><div class="tl-labels"></div></div><p class="hint">Touch the line where it happened · ${DIR==='rtl'?'left':'right'} edge is now</p>`;
     const track=$('.tl-track',body),marks=$('.tl-marks',body),thumb=$('.tl-thumb',body),labels=$('.tl-labels',body);
     let win=null;
     const computeWin=()=>{const end=Date.now(),v=val();const span=Math.max(3*H,end-v+30*MIN);win={start:end-span,end,span};};
     const pct=t=>(t-win.start)/win.span*100;
+    const side=DIR==='rtl'?'right':'left'; // the timeline runs past → now in reading direction
     function drawMarks(){
       let m='',l='';
       const q=15*MIN;
       for(let t=Math.ceil(win.start/q)*q;t<=win.end;t+=q){
         const major=new Date(t).getMinutes()===0;
-        m+=`<span class="tl-tick${major?' major':''}" style="left:${pct(t)}%"></span>`;
+        m+=`<span class="tl-tick${major?' major':''}" style="${side}:${pct(t)}%"></span>`;
         const p=pct(t);
-        if(major&&p>7&&p<86) l+=`<span style="left:${p}%">${clock(t)}</span>`;
+        if(major&&p>7&&p<86) l+=`<span style="${side}:${p}%">${clock(t)}</span>`;
       }
-      l+=`<span class="end" style="left:100%">now</span>`;
+      l+=`<span class="end" style="${side}:100%">${nowWord()}</span>`;
       for(const e of S.entries){
         const s=e.start,f=e.running?win.end:(e.end||e.start);
         if(f<win.start||s>win.end)continue;
         const a=Math.max(0,pct(s)),b=Math.min(100,pct(f));
-        m+=`<span class="tl-ev" style="--ec:var(--${e.type});left:${a}%;width:calc(${b-a}% + 0px)"></span>`;
+        m+=`<span class="tl-ev" style="--ec:var(--${e.type});${side}:${a}%;width:calc(${b-a}% + 0px)"></span>`;
       }
       marks.innerHTML=m;labels.innerHTML=l;
     }
     function fromX(x){
       const r=track.getBoundingClientRect();
-      const p=Math.min(1,Math.max(0,(x-r.left)/r.width));
+      let p=Math.min(1,Math.max(0,(x-r.left)/r.width));if(side==='right')p=1-p;
       const t=win.start+p*win.span;
       if(win.end-t<2.5*MIN)return null;
       return Math.round(t/GRID)*GRID;
@@ -608,7 +729,7 @@ function makeAdjuster({label,get,set,min}){
     track.addEventListener('pointermove',e=>{if(api.busy)apply(fromX(e.clientX));});
     ['pointerup','pointercancel'].forEach(ev=>track.addEventListener(ev,()=>{api.busy=false;computeWin();drawMarks();refresh();}));
     computeWin();drawMarks();
-    refreshBody=()=>{if(!api.busy){computeWin();drawMarks();}thumb.style.left=Math.min(100,Math.max(0,pct(val())))+'%';};
+    refreshBody=()=>{if(!api.busy){computeWin();drawMarks();}thumb.style.left=thumb.style.right='';thumb.style[side]=Math.min(100,Math.max(0,pct(val())))+'%';};
   }
 
   function refresh(){
@@ -616,7 +737,7 @@ function makeAdjuster({label,get,set,min}){
     $('.adj-time',el).textContent=clock(v);
     const a=$('.adj-ago',el);
     const isNow=g==null||Date.now()-g<45000;
-    a.textContent=isNow?'now':ago(v);
+    a.textContent=isNow?nowWord():ago(v);
     a.classList.toggle('now',isNow);
     refreshBody();
   }
@@ -638,8 +759,8 @@ function usualDur(type){
 }
 // Chips adapt: an in-between amount logged 2+ times in the last 20 bottles replaces the nearest standard chip.
 function bottleAmounts(){
-  const base=T.feed.amounts,recent=S.entries.filter(e=>e.sub==='bottle'&&e.ml&&!e.ex).sort((a,b)=>b.start-a.start).slice(0,20);
-  const n={};recent.forEach(e=>{n[e.ml]=(n[e.ml]||0)+1;});
+  const base=baseAmounts(),recent=S.entries.filter(e=>e.sub==='bottle'&&e.ml&&!e.ex).sort((a,b)=>b.start-a.start).slice(0,20);
+  const n={};recent.forEach(e=>{const k=snapAmt(e.ml);n[k]=(n[k]||0)+1;});
   const list=[...base],custom=new Set();
   Object.keys(n).map(Number).filter(m=>!base.includes(m)&&n[m]>=2).sort((a,b)=>n[b]-n[a]).slice(0,3).forEach(c=>{
     let bi=-1;list.forEach((v,i)=>{if(!custom.has(v)&&(bi<0||Math.abs(v-c)<Math.abs(list[bi]-c)))bi=i;});
@@ -648,8 +769,8 @@ function bottleAmounts(){
   return list.sort((a,b)=>a-b);
 }
 function usualMl(){
-  const ms=S.entries.filter(e=>e.sub==='bottle'&&e.ml).sort((a,b)=>b.start-a.start).slice(0,6).map(e=>e.ml);
-  const opts=bottleAmounts();if(!ms.length)return T.feed.dfltMl;
+  const ms=S.entries.filter(e=>e.sub==='bottle'&&e.ml).sort((a,b)=>b.start-a.start).slice(0,6).map(e=>snapAmt(e.ml));
+  const opts=bottleAmounts();if(!ms.length)return dfltAmt();
   const md=median(ms);return opts.reduce((a,b)=>Math.abs(b-md)<Math.abs(a-md)?b:a);
 }
 function suggestSide(){
@@ -675,13 +796,13 @@ function renderNew(){
   if(bottle){
     // Pick, then save: the usual amount starts selected, and the pinned Save button names exactly what will be logged.
     const u=usualMl();
-    if(sheet.ml==null)sheet.ml=u;
+    if(sheet.ml==null||snapAmt(sheet.ml)!==sheet.ml)sheet.ml=u;
     h+=`<div data-slot="adj" style="${cv(type)}"></div>`;
-    h+=`<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">Amount</span><small>ml</small></div>
-      <div class="acts four">${bottleAmounts().map(m=>`<button class="amtchip${m===sheet.ml?' on':''}" data-pickml="${m}" type="button" aria-pressed="${m===sheet.ml}"><span class="l">${m}</span>${m===u?'<span class="tag">usual</span>':''}</button>`).join('')}</div>
+    h+=`<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">Amount</span><small>${unitName()}</small></div>
+      <div class="acts four">${bottleAmounts().map(m=>`<button class="amtchip${m===sheet.ml?' on':''}" data-pickml="${m}" type="button" aria-pressed="${m===sheet.ml}"><span class="l">${amtNum(m)}</span>${m===u?'<span class="tag">usual</span>':''}</button>`).join('')}</div>
       </div>`;
     // Presets + stepper: −10 / +10 sit on either side of the Save button, next to the amount they change.
-    h+=`<div class="acts savebar" style="${cv(type)}"><button class="nb" data-mlnudge="-10" type="button" aria-label="10 ml less">−10</button><button class="big" data-savebottle type="button"><span class="l">Save <span data-mllabel>${sheet.ml}</span> ml</span><span class="s" data-cap></span></button><button class="nb" data-mlnudge="10" type="button" aria-label="10 ml more">+10</button></div>`;
+    h+=`<div class="acts savebar" style="${cv(type)}"><button class="nb" data-mlnudge="-1" type="button" aria-label="Less">${amtStepLabel(-1)}</button><button class="big" data-savebottle type="button"><span class="l">Save <span data-mllabel>${amtFmt(sheet.ml)}</span></span><span class="s" data-cap></span></button><button class="nb" data-mlnudge="1" type="button" aria-label="More">${amtStepLabel(1)}</button></div>`;
     els.sheetIn.innerHTML=h;
     const adj=makeAdjuster({label:'When',get:()=>sheet.when,set:v=>{sheet.when=v;caps();}});
     mountTime(adj);
@@ -695,7 +816,7 @@ function renderNew(){
     const u=usualDur(type),end=sheet.when??Date.now(),st=durStep(type);
     h+=`<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">${type==='sleep'?'Fell asleep':'Started'}</span><small>tap a length or a time</small></div>
       <div class="chips" data-role="dur">${T[type].durs.map(m=>`<button class="chip dchip${m===sheet.dur?' on':''}${m===u?' usual':''}" data-d="${m}" type="button"><span class="dl">${durLabel(m)}</span><span class="dc" data-dclock="${m}">${clock(end-m*MIN)}</span></button>`).join('')}</div>
-      <div class="dstep"><button class="nb" data-dstep="${st}" type="button" aria-label="${st} minutes earlier">−${st}</button><div class="amt-show"><b class="num" data-startbig>${clock(end-sheet.dur*MIN)}</b></div><button class="nb" data-dstep="-${st}" type="button" aria-label="${st} minutes later">+${st}</button></div>
+      <div class="dstep"><button class="nb" data-dstep="${st}" type="button" aria-label="${st} minutes earlier">${signed(-st)}</button><div class="amt-show"><b class="num" data-startbig>${clock(end-sheet.dur*MIN)}</b></div><button class="nb" data-dstep="-${st}" type="button" aria-label="${st} minutes later">${signed(st)}</button></div>
       <p class="span-sum" data-sum></p></div>`;
   }
   if(type==='nappy'){
@@ -723,12 +844,12 @@ function durBlock(type){
   const u=usualDur(type),end=sheet.when??Date.now(),st=durStep(type);
   return `<div class="adj" style="${cv(type)}"><div class="dur-head"><span class="lab">${type==='sleep'?'Fell asleep':'Started'}</span><small>tap a length or a time</small></div>
     <div class="chips" data-role="dur">${T[type].durs.map(m=>`<button class="chip dchip${m===sheet.dur?' on':''}${m===u?' usual':''}" data-d="${m}" type="button"><span class="dl">${durLabel(m)}</span><span class="dc" data-dclock="${m}">${clock(end-m*MIN)}</span></button>`).join('')}</div>
-    <div class="dstep"><button class="nb" data-dstep="${st}" type="button" aria-label="${st} minutes earlier">−${st}</button><div class="amt-show"><b class="num" data-startbig>${clock(end-sheet.dur*MIN)}</b></div><button class="nb" data-dstep="-${st}" type="button" aria-label="${st} minutes later">+${st}</button></div>
+    <div class="dstep"><button class="nb" data-dstep="${st}" type="button" aria-label="${st} minutes earlier">${signed(-st)}</button><div class="amt-show"><b class="num" data-startbig>${clock(end-sheet.dur*MIN)}</b></div><button class="nb" data-dstep="-${st}" type="button" aria-label="${st} minutes later">${signed(st)}</button></div>
     <p class="span-sum" data-sum></p></div>`;
 }
 function saveBar(type){
-  if(type==='nappy')return `<div class="acts" style="${cv(type)}"><button class="big" data-sub="${sheet.sub}" type="button"><span class="l">Save ${SUB[sheet.sub].toLowerCase()} nappy</span><span class="s" data-cap></span></button></div>`;
-  if(type==='feed'&&sheet.feedKind==='bottle')return `<div class="acts" style="${cv(type)}"><button class="big" data-savebottle type="button"><span class="l">Save ${sheet.ml} ml</span><span class="s" data-cap></span></button></div>`;
+  if(type==='nappy')return `<div class="acts" style="${cv(type)}"><button class="big" data-sub="${sheet.sub}" type="button"><span class="l">Save ${SUB[sheet.sub].toLowerCase()} ${nappyWord()}</span><span class="s" data-cap></span></button></div>`;
+  if(type==='feed'&&sheet.feedKind==='bottle')return `<div class="acts" style="${cv(type)}"><button class="big" data-savebottle type="button"><span class="l">Save ${amtFmt(sheet.ml)}</span><span class="s" data-cap></span></button></div>`;
   if(type==='feed')return `<div class="acts two" style="${cv(type)}">${['L','R'].map(x=>`<button class="big${x===sheet.next?'':' alt'}" data-sub="${x}" type="button">${x===sheet.next?'<span class="next">next</span>':''}<span class="l">${SUB[x]}</span><span class="s" data-cap></span></button>`).join('')}</div>`;
   return `<div class="acts" style="${cv(type)}"><button class="big" data-sub="" type="button"><span class="l">${sheet.mode==='done'?'Save sleep':'Start sleep'}</span><span class="s" data-cap></span></button></div>`;
 }
@@ -739,7 +860,7 @@ function renderSteps(){
   const crumbs=[T[type].label];
   if(type==='nappy'&&sheet.sub&&sheet.step>0)crumbs.push(SUB[sheet.sub]);
   if(type==='feed'&&sheet.step>0)crumbs.push(sheet.feedKind==='bottle'?'Bottle':'Breast');
-  if(type==='feed'&&sheet.feedKind==='bottle'&&sheet.step>1)crumbs.push(sheet.ml+' ml');
+  if(type==='feed'&&sheet.feedKind==='bottle'&&sheet.step>1)crumbs.push(amtFmt(sheet.ml));
   if(sheet.mode&&list.includes('mode')&&list.indexOf('mode')<sheet.step)crumbs.push(sheet.mode==='done'?'Already done':'Timer');
   const dots=list.map((_,i)=>`<i class="${i===sheet.step?'on':i<sheet.step?'done':''}"></i>`).join('');
   let h=`<div class="grab"></div><div class="sh-head step-head" style="${cv(type)}">
@@ -755,9 +876,9 @@ function renderSteps(){
   }else if(id==='mode'){
     h+=`<p class="step-q">${type==='sleep'?'Asleep now, or already awake?':'Feeding now, or already done?'}</p><div class="choices two" style="${cv(type)}">${choice('mode:timer','Start timer',type==='sleep'?'asleep now':'feeding now')}${choice('mode:done','Already done','log a past one')}</div>`;
   }else if(id==='amount'){
-    const u=usualMl();if(sheet.ml==null)sheet.ml=u;
-    h+=`<p class="step-q">How much?</p><div class="adj" style="${cv(type)}"><div class="acts four">${bottleAmounts().map(m=>`<button class="amtchip${m===sheet.ml?' on':''}" data-pickml="${m}" type="button" aria-pressed="${m===sheet.ml}"><span class="l">${m}</span>${m===u?'<span class="tag">usual</span>':''}</button>`).join('')}</div></div>`;
-    h+=`<div class="acts savebar" style="${cv(type)}"><button class="nb" data-mlnudge="-10" type="button" aria-label="10 ml less">−10</button><button class="big" data-next type="button"><span class="l">Next</span><span class="s"><span data-mllabel>${sheet.ml}</span> ml</span></button><button class="nb" data-mlnudge="10" type="button" aria-label="10 ml more">+10</button></div>`;
+    const u=usualMl();if(sheet.ml==null||snapAmt(sheet.ml)!==sheet.ml)sheet.ml=u;
+    h+=`<p class="step-q">How much?</p><div class="adj" style="${cv(type)}"><div class="acts four">${bottleAmounts().map(m=>`<button class="amtchip${m===sheet.ml?' on':''}" data-pickml="${m}" type="button" aria-pressed="${m===sheet.ml}"><span class="l">${amtNum(m)}</span>${m===u?'<span class="tag">usual</span>':''}</button>`).join('')}</div></div>`;
+    h+=`<div class="acts savebar" style="${cv(type)}"><button class="nb" data-mlnudge="-1" type="button" aria-label="Less">${amtStepLabel(-1)}</button><button class="big" data-next type="button"><span class="l">Next</span><span class="s"><span data-mllabel>${amtFmt(sheet.ml)}</span></span></button><button class="nb" data-mlnudge="1" type="button" aria-label="More">${amtStepLabel(1)}</button></div>`;
   }else if(id==='when'){
     const lab=type==='nappy'||sheet.feedKind==='bottle'&&type==='feed'?'When':sheet.mode==='done'?(type==='sleep'?'Woke up':'Ended'):'Started';
     h+=`<p class="step-q">${lab==='When'?'When?':lab==='Started'?'When did it start?':lab==='Woke up'?'When did they wake up?':'When did it end?'}</p><div data-slot="adj" style="${cv(type)}"></div>`;
@@ -783,7 +904,7 @@ function mountTime(adj){
 }
 function updateWhen(){
   const v=$('[data-whenval]',els.sheetIn);if(!v||!sheet)return;
-  v.textContent=sheet.when==null?(v.closest('[data-next]')?'now':'Now'):(v.closest('[data-next]')?clock(sheet.when):`${clock(sheet.when)} · ${ago(sheet.when)}`);
+  v.textContent=sheet.when==null?(v.closest('[data-next]')?nowWord():cap(nowWord())):(v.closest('[data-next]')?clock(sheet.when):`${clock(sheet.when)} · ${ago(sheet.when)}`);
 }
 function caps(){
   if(!sheet||sheet.kind!=='new')return;
@@ -799,7 +920,7 @@ function caps(){
     els.sheetIn.querySelectorAll('[data-dclock]').forEach(x=>{x.textContent=clock(end-(+x.dataset.dclock)*MIN);});
     const big=$('[data-startbig]',els.sheetIn);if(big)big.textContent=clock(start);
     const sum=$('[data-sum]',els.sheetIn);
-    if(sum)sum.innerHTML=`${sheet.type==='sleep'?'Asleep':'Fed'} <b>${clock(start)}</b> → <b>${w==null?'now':clock(end)}</b> · ${dur(sheet.dur*MIN)}`;
+    if(sum)sum.innerHTML=`${sheet.type==='sleep'?'Asleep':'Fed'} <b>${clock(start)}</b> ${arrow()} <b>${w==null?nowWord():clock(end)}</b> · ${dur(sheet.dur*MIN)}`;
   }
 }
 function commitNew(sub,ml){
@@ -808,8 +929,8 @@ function commitNew(sub,ml){
   const hadEx=S.entries.some(e=>e.ex);
   S.entries=S.entries.filter(e=>!e.ex);
   let e,msg;
-  if(ml){e={id:uid(),type:'feed',sub:'bottle',start:at,end:at,ml};msg=`Bottle ${ml} ml · ${clock(at)}`;}
-  else if(type==='nappy'){e={id:uid(),type,sub,start:at,end:at};msg=`${SUB[sub]} nappy · ${clock(at)}`;}
+  if(ml){e={id:uid(),type:'feed',sub:'bottle',start:at,end:at,ml};msg=`Bottle ${amtFmt(ml)} · ${clock(at)}`;}
+  else if(type==='nappy'){e={id:uid(),type,sub,start:at,end:at};msg=`${SUB[sub]} ${nappyWord()} · ${clock(at)}`;}
   else if(mode==='timer'){e={id:uid(),type,sub:sub||null,start:at,end:null,running:true};msg=`${T[type].label} timer started${sub?' · '+SUB[sub]:''}`;}
   else{e={id:uid(),type,sub:sub||null,start:at-sheet.dur*MIN,end:at};msg=`${T[type].label} logged · ${dur(sheet.dur*MIN)}`;}
   S.entries.push(e);
@@ -839,13 +960,13 @@ function renderEdit(){
   if(hasEnd){
     const cur=Math.round((e.end-e.start)/MIN);
     h+=`<div class="adj" style="${cv(e.type)}"><div class="dur-head"><span class="lab">How long</span><small>${dur(e.end-e.start)}</small></div><div class="chips" data-role="edur">${t.durs.map(m=>`<button class="chip${m===cur?' on':''}" data-d="${m}" type="button">${durLabel(m)}</button>`).join('')}</div>
-      <div class="dstep"><button class="nb" data-edstep="-${durStep(e.type)}" type="button" aria-label="${durStep(e.type)} minutes shorter">−${durStep(e.type)}</button><div class="amt-show"><b class="num">${dur(e.end-e.start)}</b></div><button class="nb" data-edstep="${durStep(e.type)}" type="button" aria-label="${durStep(e.type)} minutes longer">+${durStep(e.type)}</button></div></div>`;
+      <div class="dstep"><button class="nb" data-edstep="-${durStep(e.type)}" type="button" aria-label="${durStep(e.type)} minutes shorter">${signed(-durStep(e.type))}</button><div class="amt-show"><b class="num">${dur(e.end-e.start)}</b></div><button class="nb" data-edstep="${durStep(e.type)}" type="button" aria-label="${durStep(e.type)} minutes longer">${signed(durStep(e.type))}</button></div></div>`;
   }
   if(isBottle){
-    const ml=e.ml||usualMl();
+    const ml=snapAmt(e.ml||usualMl());
     h+=`<div class="adj" style="${cv(e.type)}"><span class="lab">Amount</span>
-      <div class="nudge"><button class="nb" data-mlstep="-10" type="button" aria-label="10 ml less">−10</button><div class="amt-show"><b class="num">${ml}</b> ml</div><button class="nb" data-mlstep="10" type="button" aria-label="10 ml more">+10</button></div>
-      <div class="chips">${bottleAmounts().map(m=>`<button class="chip${m===ml?' on':''}" data-setml="${m}" type="button">${m}</button>`).join('')}</div></div>`;
+      <div class="nudge"><button class="nb" data-mlstep="-1" type="button" aria-label="Less">${amtStepLabel(-1)}</button><div class="amt-show"><b class="num">${amtFmt(ml)}</b></div><button class="nb" data-mlstep="1" type="button" aria-label="More">${amtStepLabel(1)}</button></div>
+      <div class="chips">${bottleAmounts().map(m=>`<button class="chip${m===ml?' on':''}" data-setml="${m}" type="button">${amtNum(m)}</button>`).join('')}</div></div>`;
   }
   h+=`<div class="foot"><button class="btn danger${sheet.armed?' armed':''}" data-del type="button">${sheet.armed?'Tap to confirm':'Delete'}</button><button class="btn primary" data-close type="button">Done</button></div>`;
   els.sheetIn.innerHTML=h;
@@ -875,6 +996,25 @@ function updateEditLabels(){
   els.sheetIn.querySelectorAll('[data-role="edur"] .chip').forEach(b=>b.classList.toggle('on',+b.dataset.d===cur));
 }
 
+const LANGS=[['auto','Phone setting'],['en-GB','English (UK)'],['en-US','English (US)'],['fr-FR','Français'],['de-DE','Deutsch'],['ja-JP','日本語'],['zh-CN','中文'],['ar-EG','العربية'],['he-IL','עברית']];
+function openRegion(){sheet={kind:'region'};renderRegion();showSheet();}
+function renderRegion(){
+  const L=S.loc||{},cur=k=>L[k]||'auto';
+  const seg=(k,label,opts)=>`<div class="rg"><span class="lab">${label}</span><div class="seg seg-lg">${opts.map(([v,t])=>`<button data-loc="${k}:${v}" class="${cur(k)===v?'on':''}" type="button">${t}</button>`).join('')}</div></div>`;
+  const now=Date.now(),row=(k,v)=>`<div class="pv-row"><span>${k}</span><b>${v}</b></div>`;
+  els.sheetIn.innerHTML=`<div class="grab"></div><div class="sh-head" style="--c:var(--ink)"><h2>Region &amp; format</h2><button class="x" data-close aria-label="Close" type="button">×</button></div>
+  <div class="pv">
+    ${row('Time',clock(now))}${row('2½ hours ago',ago(now-150*MIN))}${row('Length',lenFmt(150))}${row('Timer',elapsed(83*60000+5000))}${row('Bottle',amtFmt(usualMl()))}${row('Word',T.nappy.label)}${row('Direction',DIR==='rtl'?'Right to left':'Left to right')}
+    <p class="pv-note">Formatting as <b>${LOC}</b></p>
+  </div>
+  <div class="rg"><span class="lab">Language &amp; region</span><div class="langs">${LANGS.map(([v,t])=>`<button data-loc="lang:${v}" class="${cur('lang')===v?'on':''}" type="button" lang="${v==='auto'?'':v}">${t}</button>`).join('')}</div></div>
+  ${seg('clock','Clock',[['auto','Auto'],['h12','12-hour'],['h23','24-hour']])}
+  ${seg('units','Bottle units',[['auto','Auto'],['ml','ml'],['oz','fl oz']])}
+  ${seg('word','Word',[['auto','Auto'],['nappy','Nappy'],['diaper','Diaper']])}
+  ${seg('dir','Direction',[['auto','Auto'],['ltr','Left to right'],['rtl','Right to left']])}
+  <p class="prose">Auto follows the language and region above. The app's own words stay in English in this prototype; times, numbers, lengths, units and layout direction change the way a translated build would.</p>`;
+  adjusters=[];
+}
 function openTest(){sheet={kind:'test',armed:false};renderTest();showSheet();}
 function renderTest(){
   const rows=Object.keys(METHODS).map(m=>{
@@ -898,6 +1038,7 @@ function renderTest(){
     <li><b>Rail</b> Five chips with now on the right; More opens the full range to swipe back through.</li>
     <li><b>Nudge</b> Step 5 minutes at a time with big buttons, or drag the ruler.</li>
     <li><b>Timeline</b> Touch the spot on the last few hours where it happened.</li>
+    <li><b>List</b> Quarter hours in a vertical list, newest at the top. Works the same in any reading direction.</li>
   </ul>
   <div class="foot"><button class="btn${sheet.armed?' danger armed':''}" data-wipe type="button">${sheet.armed?'Tap to confirm':'Delete all entries'}</button><button class="btn" data-reset type="button">Reset timings</button></div>`;
   els.sheetIn.innerHTML=h;adjusters=[];
@@ -916,13 +1057,13 @@ els.sheetIn.addEventListener('click',ev=>{
     if(b.dataset.pickml){
       sheet.ml=+b.dataset.pickml;
       els.sheetIn.querySelectorAll('[data-pickml]').forEach(c=>{const on=c===b;c.classList.toggle('on',on);c.setAttribute('aria-pressed',on);});
-      const l=$('[data-mllabel]',els.sheetIn);if(l)l.textContent=sheet.ml;
+      const l=$('[data-mllabel]',els.sheetIn);if(l)l.textContent=amtFmt(sheet.ml);
       haptic();return;
     }
     if(b.dataset.mlnudge){
-      sheet.ml=Math.max(10,Math.min(400,sheet.ml+(+b.dataset.mlnudge)));
+      sheet.ml=clampAmt(snapAmt(sheet.ml+(+b.dataset.mlnudge)*amtStep()));
       els.sheetIn.querySelectorAll('[data-pickml]').forEach(c=>{const on=+c.dataset.pickml===sheet.ml;c.classList.toggle('on',on);c.setAttribute('aria-pressed',on);});
-      const l=$('[data-mllabel]',els.sheetIn);if(l)l.textContent=sheet.ml;
+      const l=$('[data-mllabel]',els.sheetIn);if(l)l.textContent=amtFmt(sheet.ml);
       haptic();return;
     }
     if(b.hasAttribute('data-savebottle')){commitNew('bottle',sheet.ml);return;}
@@ -930,6 +1071,10 @@ els.sheetIn.addEventListener('click',ev=>{
     if(b.dataset.d&&b.closest('[data-role="dur"]')){sheet.dur=+b.dataset.d;renderNew();haptic();return;}
     if(b.dataset.dstep){sheet.dur=Math.max(durStep(sheet.type),Math.min(DUR_MAX,sheet.dur+(+b.dataset.dstep)));renderNew();haptic();return;}
     if(b.hasAttribute('data-sub')){commitNew(b.dataset.sub);return;}
+  }
+  if(sheet.kind==='region'&&b.dataset.loc){
+    const [k,v]=b.dataset.loc.split(':');S.loc=Object.assign({},S.loc,{[k]:v});
+    save();resolveLocale();applyPrefs();renderMain();renderRegion();haptic();return;
   }
   if(sheet.kind==='edit'){
     const e=S.entries.find(x=>x.id===sheet.id);if(!e)return;
@@ -939,7 +1084,7 @@ els.sheetIn.addEventListener('click',ev=>{
       if(ns!=='bottle'&&wasBottle&&e.type==='feed'){e.end=Math.min(e.start+usualDur('feed')*MIN,Date.now());if(e.end<=e.start)e.end=e.start+MIN;}
       e.sub=ns;save();renderMain();renderEdit();return;
     }
-    if(b.dataset.mlstep){e.ml=Math.max(5,Math.min(400,(e.ml||usualMl())+(+b.dataset.mlstep)));save();renderMain();renderEdit();haptic();return;}
+    if(b.dataset.mlstep){e.ml=clampAmt(snapAmt(snapAmt(e.ml||usualMl())+(+b.dataset.mlstep)*amtStep()));save();renderMain();renderEdit();haptic();return;}
     if(b.dataset.setml){e.ml=+b.dataset.setml;save();renderMain();renderEdit();haptic();return;}
     if(b.dataset.w){sheet.which=b.dataset.w;renderEdit();return;}
     const edMin=b.dataset.edstep?Math.max(durStep(e.type),Math.min(DUR_MAX,Math.round((e.end-e.start)/MIN)+(+b.dataset.edstep))):(b.dataset.d&&b.closest('[data-role="edur"]')?+b.dataset.d:null);
@@ -979,6 +1124,7 @@ els.seg.addEventListener('click',e=>{
 $('#flowSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.flow=b.dataset.f;save();applyPrefs();if(sheet&&sheet.kind==='new'){sheet.step=0;renderNew();}});
 els.night.addEventListener('click',()=>{S.night=!S.night;save();applyPrefs();});
 $('#testBtn').addEventListener('click',openTest);
+$('#regionBtn').addEventListener('click',openRegion);
 $('#clearEx').addEventListener('click',()=>{snapshot();S.entries=S.entries.filter(e=>!e.ex);save();renderMain();toast('Examples cleared',null);});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sheet)closeSheet();});
 
@@ -993,7 +1139,7 @@ setInterval(()=>{
 setInterval(renderMain,15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderMain();});
 
-applyPrefs();renderMain();
+resolveLocale();applyPrefs();renderMain();
 })();
 </script>
 <script>
