@@ -402,6 +402,23 @@ const LEVELS=[
   {name:'Sherlock of Nappies',whatEv:1,whenEv:1,decoys:3,funny:1,looks:3,opts:6,time:35,mult:2,desc:'Only 3 looks. 35 seconds. 6 suspects. Points x2.'}
 ];
 const RANKS=[[0,'Sleep-Deprived Intern'],[350,'Nappy Detective'],[650,'Inspector Poop'],[950,'Sleep-Deprived Sherlock']];
+const NOTIFS=[
+ ['\u{1F4F1}','Grandma','sent 14 photos. Of your baby. To you.'],
+ ['\u{1F475}','Grandma','Is she warm enough?? Send a photo'],
+ ['\u{1F4AC}','Baby group chat','47 new messages: "anyone else\'s baby AWAKE??"'],
+ ['\u{1F4AC}','Baby group chat','"sleep regression is real \u{1F480}"'],
+ ['❤️','Partner','On my way back. Want anything? x'],
+ ['❤️','Partner','Have you eaten today?'],
+ ['\u{1F4F8}','Instagram','@perfect.mama posted: "our calm 5am sensory play ✨"'],
+ ['⏳','Screen time','Your screen time was up 340% this week.'],
+ ['\u{1F319}','Sleep tracker','You slept 3h 12m. Bold choice.'],
+ ['\u{1F5D3}️','Calendar','Date night (lol)'],
+ ['\u{1F469}‍⚕️','Health visitor','Reminder: weigh-in Thursday, 10:00.'],
+ ['\u{1F916}','AI chat','"Every baby is different!" Thanks. Very helpful.'],
+ ['\u{1F378}','Work friend','Drinks Friday?? \u{1F378}\u{1F378}'],
+ ['\u{1F5BC}️','Photos','On this day, 2 years ago: you, well rested.'],
+ ['\u{1F475}','Your mum','Have you tried putting her down drowsy but awake?']
+];
 const SIGNOFF=['Faster than asking ChatGPT at 3am.','More reliable than three AIs and a parenting forum.','Gemini would have said "it depends".','Claude would have asked a follow-up question.','Grandma has already shared this to Facebook.','Your mum friends will be hearing about this.'];
 const rankFor=sc=>RANKS.filter(r=>sc>=r[0]).pop()[1];
 function boxesFor(o){const d=OBJ[o.sp],h=d.top[2];const ps=[];[0,h].forEach(z=>[[0,0],[d.w,0],[0,d.d],[d.w,d.d]].forEach(([a,b])=>ps.push(P(o.x+a,o.y+b,z))));
@@ -742,10 +759,10 @@ function title(){S.phase='title';stop();head();
   if(done)bindShare(res.share,res.share0);
   $('go').onclick=()=>{audioInit();setTimeout(sndUI,150);if(done)newShift(false);else if(live)resume(run);else newShift(true)}}
 function resume(run){Object.assign(S,{daily:true,seed:run.seed,results:run.results,pts:run.pts||[],score:run.score,minis:run.minis,ws:run.ws,bonus:run.bonus,shift:run.shift});S.n=run.nextN;if(S.n>=3)rank();else openCase()}
-function newShift(daily){S.daily=!!daily;S.pts=[];S.seed=daily?todayNo()*7919+13:Math.floor(Math.random()*1e9);RAND=mulberry(S.seed);S.n=0;S.ws=[];S.results=[];S.score=0;S.minis=[];S.bonus={looks:0,time:0};S.shift=shuffle(Object.keys(MINIS)).slice(0,2);openCase()}
+function newShift(daily){S.daily=!!daily;S.pts=[];S.notif=daily?{n:0,i:0,delay:2200}:{n:Math.floor(Math.random()*3),i:Math.floor(Math.random()*NOTIFS.length),delay:2000+Math.random()*7000};S.seed=daily?todayNo()*7919+13:Math.floor(Math.random()*1e9);RAND=mulberry(S.seed);S.n=0;S.ws=[];S.results=[];S.score=0;S.minis=[];S.bonus={looks:0,time:0};S.shift=shuffle(Object.keys(MINIS)).slice(0,2);openCase()}
 function openCase(){RAND=mulberry(S.seed*31+S.n*977+1);const c=makeCase(S.n,(S.ws||[]).slice(0,S.n));(S.ws=S.ws||[])[S.n]=c.w,L=LEVELS[c.lv];S.c=c;
   c.looks=L.looks>50?99:L.looks+S.bonus.looks;c.timeMax=L.time?Math.max(15,L.time+S.bonus.time):0;c.timeLeft=c.timeMax;c.wrong=[];c.bonusNote=S.n>0&&L.time?(S.bonus.time>0?'+1 look, +10s':'-10s'):'';S.bonus={looks:0,time:0};
-  S.phase='case';if(S.daily)saveRun({results:[...S.results,'bad'],pts:[...S.pts,0]});play('open');renderCase();if(S.n===0)setTimeout(()=>{if(S.phase==='case'&&S.n===0)toast(`<i>\u{1F4F1}</i><span><b>Grandma \u00b7 now</b>sent 14 photos. Of your baby. To you.</span>`,'notif')},2200);
+  S.phase='case';if(S.daily)saveRun({results:[...S.results,'bad'],pts:[...S.pts,0]});play('open');renderCase();const nf=S.notif;if(nf&&S.n===nf.n){const n0=S.n,[ic,who,msg]=NOTIFS[nf.i];setTimeout(()=>{if(S.phase==='case'&&S.n===n0)toast(`<i>${ic}</i><span><b>${who} \u00b7 now</b>${msg}</span>`,'notif')},nf.delay)}
   if(c.timeMax){stop();let grace=15;tick=setInterval(()=>{if(grace>0){grace--;return}c.timeLeft-=.1;head();worth();const dv=M.querySelector('.diorama');if(dv)dv.classList.toggle('urgent',c.timeLeft<10);const sec=Math.ceil(c.timeLeft);if(sec!==c.lastSec){c.lastSec=sec;if(sec===20){toast('20 seconds left!');play('tick')}if(sec<=10&&sec>0){countdown(sec);if(AU.on&&AU.ctx)tone(700+(10-sec)*90,.06,{vol:sec<=3?.12:.07,type:'square'});try{if(sec<=5&&navigator.vibrate)navigator.vibrate(30)}catch(_){}}}if(c.timeLeft<=0){c.timeLeft=0;c.pick=null;solve()}},100)}}
 function renderCase(flash){const c=S.c,L=LEVELS[c.lv];head();
   const lo=c.last!=null?c.objs[c.last]:null,left=c.looks>50?null:c.looks-looksUsed(c);
