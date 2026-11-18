@@ -495,7 +495,7 @@ function diorama(c,mode){
     if(mode==='show')s+=`<text class="arrow" x="${x.toFixed(1)}" y="${Math.max(12,y-20).toFixed(1)}" text-anchor="middle">▼</text>`;
     else{s+='</g>'}
   });
-  if(coachI>=0){const t=tags.find(q=>q.i===coachI);if(t){const [x,y]=t.tp;s+=`<g class="coachtap" pointer-events="none"><rect x="${(x-26).toFixed(1)}" y="${(y-54).toFixed(1)}" width="52" height="18" rx="9" fill="#c8612b" stroke="#3a2416" stroke-width="1.2"/><text x="${x.toFixed(1)}" y="${(y-42).toFixed(1)}" text-anchor="middle" font-family="Caprasimo,Georgia,serif" font-size="10" fill="#f6ead2">Tap me!</text><path d="M${(x-5).toFixed(1)} ${(y-36.5).toFixed(1)} l5 6 l5 -6z" fill="#c8612b"/></g>`}}
+  if(coachI>=0){const t=tags.find(q=>q.i===coachI);if(t){const [x,y]=t.tp;s+=`<g class="coachtap" pointer-events="none"><rect x="${(x-26).toFixed(1)}" y="${(y-42).toFixed(1)}" width="52" height="18" rx="9" fill="#c8612b" stroke="#3a2416" stroke-width="1.2"/><text x="${x.toFixed(1)}" y="${(y-30).toFixed(1)}" text-anchor="middle" font-family="Caprasimo,Georgia,serif" font-size="10" fill="#f6ead2">Tap me!</text><path d="M${(x-5).toFixed(1)} ${(y-24.5).toFixed(1)} l5 6 l5 -6z" fill="#c8612b"/></g>`}}
   return `<svg class="diorama${mode==='show'?' show':''}" viewBox="6 4 248 226" aria-label="The room">${s}</svg>`}
 function zoomSVG(c,i){const o=c.objs[i];let body,vb;
   if(o.sp==='clock'){body=clockSVG(c.time);const a=P(2.75,0,3.5),b=P(5.15,0,2.65);vb=[a[0]-6,a[1]-6,b[0]-a[0]+12,b[1]-a[1]+12]}
