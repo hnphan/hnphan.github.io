@@ -605,7 +605,7 @@ const MINIS={
       const ty=by+bh-4-(bh-8)*s.target;mg.setLineDash([6,4]);mg.strokeStyle='#c8612b';mg.lineWidth=2.5;mg.beginPath();mg.moveTo(bx-10,ty);mg.lineTo(bx+bw+10,ty);mg.stroke();mg.setLineDash([]);
       
       // carton
-      mg.save();mg.translate(250,46);mg.rotate(s.on?-.9:-.15);rr(-18,-30,36,56,6,'#f6ead2','#8a7a5a');rr(-18,-10,36,18,0,'#7d8b3a');txt('MILK',0,-1,10,'#f6ead2');mg.restore();rr(bx+bw+10,ty-9,72,18,9,'#f6ead2','#3a2416',1.2);txt('fill to here',bx+bw+46,ty+4,11,'#3a2416',800);
+      mg.save();mg.translate(250,46);mg.rotate(s.on?-.9:-.15);rr(-18,-30,36,56,6,'#f6ead2','#8a7a5a');rr(-18,-10,36,18,0,'#7d8b3a');txt('MILK',0,-1,10,'#f6ead2');mg.restore();rr(bx+bw+10,ty-9,72,18,9,'#f6ead2','#3a2416',1.2);txt('fill to here',bx+bw+46,ty+.5,11,'#3a2416',800);
       if(s.on){mg.strokeStyle='#fff6df';mg.lineWidth=6;mg.lineCap='round';mg.beginPath();mg.moveTo(226,34);mg.quadraticCurveTo(195,30,182,by-6);mg.lineTo(180,by+bh-6-s.lvl*(bh-8));mg.stroke()}}},
   catch:{title:'Catch!',how:'Slide the basket',hint:'Baby keeps lobbing the dummy. Catch all four in the basket!',dur:11,
     init(s){s.hx=160;s.tx=160;s.need=4;s.got=0;s.flash=0;this.toss(s)},
