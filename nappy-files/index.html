@@ -644,25 +644,33 @@ const MINIS={
       // hands (mitten-shaped, folk style) over the rim
       [-1,1].forEach(d=>{rr(bx+d*30-7,by-6,14,14,6,'#f6c9a6',ink,1.6);mg.strokeStyle=ink;mg.lineWidth=1;mg.beginPath();mg.moveTo(bx+d*30-3,by-2);mg.lineTo(bx+d*30-3,by+4);mg.moveTo(bx+d*30+1,by-2);mg.lineTo(bx+d*30+1,by+4);mg.stroke()});
       cir(bx-8,by+14,1.6,ink);cir(bx+8,by+14,1.6,ink);mg.strokeStyle=ink;mg.lineWidth=1.3;mg.beginPath();mg.arc(bx,by+16,4,.15*Math.PI,.85*Math.PI);mg.stroke()}},
-  plug:{title:'Plug it!',how:'Drag and drop',hint:'It is pitch dark. Drag the glowing dummy into baby\u2019s mouth.',dur:11,
-    init(s){s.base=120+Math.random()*80;s.hx=s.base;s.tx=s.base;s.rot=0;s.trot=0;s.next=1;s.startle=0;s.tt=0;s.dx=40;s.dy=210;s.lx=40;s.ly=210;s.held=false;s.wake=0;s.flash=0},
-    head(s){const hy=120+Math.sin(s.tt*1.6)*1.2,mx=s.hx-Math.sin(s.rot)*15,my=hy+Math.cos(s.rot)*15;return [s.hx,hy,mx,my]},
+  plug:{title:'Plug it!',how:'Drag and drop',hint:'Drag the dummy to baby\u2019s mouth. Baby will wriggle, so wait for a still moment. Faster = more points!',dur:11,
+    init(s){s.base=120+Math.random()*80;s.hx=s.base;s.tx=s.base;s.rot=0;s.trot=0;s.next=1;s.startle=0;s.tt=0;s.dx=40;s.dy=210;s.lx=40;s.ly=210;s.held=false;s.wake=0;s.flash=0;s.wig=0;s.wa=0;s.wph=0;s.calm=0},
+    head(s){const w=Math.sin(s.wph)*s.wa,hx=s.hx+w*32,rot=s.rot+w*.6,hy=120+Math.sin(s.tt*1.6)*1.2,mx=hx-Math.sin(rot)*15,my=hy+Math.cos(rot)*15;return [hx,hy,mx,my,rot]},
     down(s,x,y){if(Math.hypot(x-s.dx,y-s.dy)<46||Math.hypot(x-s.dx,y-40-s.dy)<30){s.held=true;s.dx=x;s.dy=y-40}},
     move(s,x,y){if(y==null)return;if(s.held){s.dx=x;s.dy=y-40}},
-    up(s){if(!s.held)return;s.held=false;const [,,mx,my]=this.head(s);if(Math.hypot(s.dx-mx,s.dy-my)<18){s.lit=1;mEnd(true)}else{s.wake++;s.flash=.45;s.startle=.5;play('sigh');if(s.wake>=2)mEnd(false,'poke');else{s.dx=40;s.dy=210}}},
+    up(s){if(!s.held)return;s.held=false;const [,,mx,my]=this.head(s);s.wa=0;if(Math.hypot(s.dx-mx,s.dy-my)<15){s.lit=1;mEnd(true)}else{s.wake++;s.flash=.45;s.startle=.5;play('sigh');if(s.wake>=3)mEnd(false,'poke');else{s.dx=40;s.dy=210}}},
     update(s,dt){s.tt+=dt;s.flash=Math.max(0,s.flash-dt);s.startle=Math.max(0,s.startle-dt);s.next-=dt;
       if(s.next<=0){const side=Math.random()<.5?-1:1;s.tx=s.base+side*(10+Math.random()*16);s.trot=side*(.18+Math.random()*.22);s.next=1.4+Math.random()*1.4;if(Math.random()<.25){s.startle=.45;play('sigh')}}
-      const k=Math.min(1,dt*2.6);s.hx+=(s.tx-s.hx)*k;s.rot+=(s.trot-s.rot)*k},timeout(){mEnd(false,'slow')},
+      const k=Math.min(1,dt*2.6);s.hx+=(s.tx-s.hx)*k;s.rot+=(s.trot-s.rot)*k;
+      // rooting: dummy near the mouth -> head wiggles side to side, with the odd still moment
+      const [,,mx0,my0]=this.head(s),near=s.held?Math.max(0,1-Math.hypot(s.dx-mx0,s.dy-my0)/140):0;s.calm-=dt;
+      if(s.calm<=0&&near>.3&&Math.random()<dt*1.4){s.calm=.45+Math.random()*.3}
+      const target=s.calm>0?near*.15:near;s.wa+=(target-s.wa)*Math.min(1,dt*9);s.wph+=dt*(6+5*s.wa+2*Math.sin(s.tt*1.3));
+      if(near>.4&&!s.grunt){s.grunt=1;play('sigh')}if(near<.2)s.grunt=0},
+    timeout(){mEnd(false,'slow')},score(s){return Math.max(30,Math.round(160-s.tt*13))},
+    winNote(s){return `Plugged in ${s.tt.toFixed(1)}s`},
     draw(s,t){bgRoom('#2e2440','#4a3a30');rr(30,140,260,16,6,'#a8693c');rr(36,150,248,20,6,'#e8d8c0');
       rr(30,92,260,10,5,'#a8693c');for(let x=40;x<290;x+=22)rr(x,100,7,58,3,'#c99a62');
-      const [hx,hy,mx,my]=this.head(s);
+      const [hx,hy,mx,my,hr]=this.head(s);
+      if(s.wa>.25&&!s.done){mg.strokeStyle='rgba(246,234,210,.8)';mg.lineWidth=2;mg.lineCap='round';[-1,1].forEach(d=>{for(let i=0;i<2;i++){mg.beginPath();mg.arc(hx,hy,40+i*7,d>0?-.5:Math.PI-.5,d>0?.5:Math.PI+.5);mg.stroke()}})}
       rr(hx-34,138,68,30,12,'#d98b74','#3a2416',1.5);for(let i=0;i<3;i++)cir(hx-18+i*18,152,2.2,'#e8b23a');
       if(s.startle>0){[-1,1].forEach(d=>{mg.strokeStyle='#f6c9a6';mg.lineWidth=7;mg.lineCap='round';mg.beginPath();mg.moveTo(hx+d*26,142);mg.lineTo(hx+d*44,112);mg.stroke();cir(hx+d*46,108,5.5,'#f6c9a6','#3a2416',1.2)})}
-      mg.save();mg.translate(hx,hy);mg.rotate(s.rot);face(0,0,30,s.done?'sleep':s.wake>=1||s.startle>0?'half':'sleep',t);if(s.done){const k=1+Math.sin(t*9)*.05;cir(-17,10,5,'rgba(240,130,130,.55)');cir(17,10,5,'rgba(240,130,130,.55)');dummyFront(0,15,0,.95*k,false)}mg.restore();if(!s.done)cir(mx,my,4.5,'#8a3a3a');
+      mg.save();mg.translate(hx,hy);mg.rotate(hr);face(0,0,30,s.done?'sleep':s.wake>=1||s.startle>0?'half':'sleep',t);if(s.done){const k=1+Math.sin(t*9)*.05;cir(-17,10,5,'rgba(240,130,130,.55)');cir(17,10,5,'rgba(240,130,130,.55)');dummyFront(0,15,0,.95*k,false)}mg.restore();if(!s.done)cir(mx,my,4.5,'#8a3a3a');
       mg.fillStyle=`rgba(8,8,24,${s.lit?.45:s.flash>0?.7:.86})`;mg.fillRect(0,0,MW,MH);
       
       if(!s.done)dummyFront(s.dx,s.dy,0,1.1,true);
-      txt('awake',20,18,11,'#e8d8c0',400,'left');for(let i=0;i<2;i++)rr(66+i*16,12,12,12,3,i<s.wake?'#b8432a':'rgba(255,255,255,.15)')}},
+      txt('awake',20,18,11,'#e8d8c0',400,'left');for(let i=0;i<3;i++)rr(66+i*16,12,12,12,3,i<s.wake?'#b8432a':'rgba(255,255,255,.15)')}},
   shh:{title:'Shhh!',how:'Hold to walk · let go when baby peeks',hint:'Hold to tiptoe to the door. When baby peeks, let go and freeze!',dur:16,
     legend:`<div class="lg"><span><i class="g">zzz</i>hold = walk</span><span><i class="r"><svg width="22" height="14" viewBox="0 0 22 14"><ellipse cx="11" cy="7" rx="10" ry="6" fill="#fff"/><circle cx="11" cy="7" r="3.5" fill="#3a2416"/></svg></i>let go = freeze</span></div>`,
     init(s){s.px=104;s.walk=false;s.f=0;s.seen=0;s.state='deep';s.st=1.6+Math.random()*.4;s.board=-1;s.hold=0;s.taught=false;s.slow=0;s.peeks=0},
@@ -726,10 +734,10 @@ function countdown(n){let el=$('bigc');const dv=M.querySelector('.diorama');if(!
 function toast(text,kind){const t=document.createElement('div');t.className='toast'+(kind?' '+kind:'');t.innerHTML=text;document.body.appendChild(t);const a=M.querySelector('.diorama');if(kind==='notif'){t.style.top='calc(env(safe-area-inset-top,0px) + 10px)';play('look')}else if(a){const r=a.getBoundingClientRect();t.style.top=(r.top+10)+'px'}setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),400)},kind==='notif'?4200:3200)}
 function arm(el,ms){if(!el)return;el.disabled=true;el.classList.add('arming');el.style.setProperty('--arm',ms+'ms');setTimeout(()=>{el.disabled=false;el.classList.remove('arming')},ms)}
 function mEnd(win,why){if(!MS||MS.phase!=='play')return;MS.phase='over';MS.s.done=win;const key=MS.key,L=MLINES[key];const line=rnd(win?L.win:(L[why]||L.lose||Object.values(L)[1]));
-  play(win?'good':'bad');S.minis.push(win);if(win)S.score+=50;
+  play(win?'good':'bad');S.minis.push(win);const gm0=MINIS[key],mp=win?(gm0.score?gm0.score(MS.s):50):0;S.score+=mp;const wn=win&&gm0.winNote?gm0.winNote(MS.s)+' \u00b7 ':'';
   const reward=S.n<2?(win?'Reward: <b>+1 look</b> and <b>+10 seconds</b> on the next case.':'Penalty: <b>10 seconds less</b> on the next case.'):'';
   S.bonus=win?{looks:1,time:10}:{looks:0,time:-10};saveRun();
-  setTimeout(()=>{const done=MS.done;$('ml').innerHTML=`<div class="mresult ${win?'win':'lose'}"><div class="verdict ${win?'v-good':'v-bad'}">${win?'Nailed it!':'Oh no!'}</div><p>${line}</p><p class="note">${reward}</p><button class="btn" id="mnext">Back to the case</button></div>`;
+  setTimeout(()=>{const done=MS.done;$('ml').innerHTML=`<div class="mresult ${win?'win':'lose'}"><div class="verdict ${win?'v-good':'v-bad'}">${win?'Nailed it!':'Oh no!'}</div>${win?`<span class="label">${wn}+${mp} pts</span>`:''}<p>${line}</p><p class="note">${reward}</p><button class="btn" id="mnext">Back to the case</button></div>`;
     arm($('mnext'),1100);$('mnext').onclick=()=>{cancelAnimationFrame(mRaf);MS=null;done()}},900)}
 
 /* ---------- flow ---------- */
