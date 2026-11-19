@@ -103,7 +103,13 @@ a.btn{display:inline-block;text-decoration:none;text-align:center}
 .tline b.warn{background:#e8b23a}.tline.low{animation:tl .5s steps(1) infinite}@keyframes tl{50%{border-color:#b8432a;box-shadow:0 0 0 2px rgba(184,67,42,.4)}}
 .worth.low{display:inline-block;font-size:1.25em;animation:wl 1s ease-in-out infinite}@keyframes wl{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}}
 .btn.more{background:#e8b23a;color:var(--ink);width:min(100%,320px);margin-top:4px}
-.chip.spice{display:block;margin:0 auto 10px;color:#f6ead2;border-color:rgba(246,234,210,.7)}.chip.spice.on{background:#b8432a;color:#fff;border:1.5px solid var(--ink)}
+.mgo-row{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.spice{display:flex;align-items:center;gap:8px;font:inherit;background:rgba(246,234,210,.12);color:#f6ead2;border:1.5px solid rgba(246,234,210,.55);border-radius:14px;padding:6px 10px;cursor:pointer;text-align:left}
+.spice .st{display:flex;flex-direction:column;line-height:1.1}.spice b{font-size:14px}.spice small{font-size:11px;opacity:.85;font-weight:700}
+.spice .sw{width:34px;height:20px;border-radius:99px;background:rgba(246,234,210,.35);position:relative;flex:none;transition:background .2s}.spice .sw i{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s}
+.spice.on{background:rgba(184,67,42,.35);border-color:#e25f4a}.spice.on .sw{background:#e25f4a}.spice.on .sw i{left:16px}
+@media (max-width:350px){.mintro .how{display:none}.mintro .mtitle{font-size:24px}.lg{margin:2px 0 4px;gap:8px;font-size:12px}.lg i{width:26px;height:26px}.mintro .ribbon{font-size:11px;padding:2px 8px}.spice{padding:4px 8px}.spice b{font-size:13px}}
+.mintro{gap:6px;padding:10px}.mintro .mtitle{font-size:30px;line-height:1}.mintro p{font-size:14px}
 .spbadge{position:absolute;top:6px;right:10px;font-size:18px;pointer-events:none}
 .stg-ribbon{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);left:max(10px,env(safe-area-inset-left,0px));z-index:90;background:#b8432a;color:#fff;font:800 11px/1 system-ui,sans-serif;letter-spacing:.12em;padding:5px 8px;border-radius:6px;border:1.5px solid #3a2416;pointer-events:none;opacity:.9}
 #pause{position:fixed;inset:0;z-index:80;background:rgba(43,31,23,.94);display:grid;place-items:center;padding:16px}#pause .pcard{background:var(--card,#f6ead2);border:2px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:20px 22px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
@@ -724,10 +730,10 @@ function runMini(key,done){
     <div class="mstage"><canvas id="mc" aria-label="Mini-game"></canvas><div class="mlayer" id="ml"></div></div>
     <div class="tbar big" id="mbar"><b id="mfill" style="width:100%"></b></div>`;
   mSetup();
-  $('ml').innerHTML=`<div class="mintro">${isNew?'<span class="ribbon">New!</span>':''}<div class="mtitle">${gm.title}</div>${gm.legend?`<span class="how">${gm.how}</span>${gm.legend}`:`<p>${gm.hint}</p>`}<button class="chip spice${SPICY?' on':''}" id="spice" aria-pressed="${SPICY}">\u{1F336}\uFE0F Spicy \u00b7 \u00d72 pts</button><button class="btn" id="mready">${isNew?'Ready!':'Go!'}${SPICY?' \u{1F336}\uFE0F':''}</button></div>`;
-  $('spice').onclick=e=>{e.stopPropagation();SPICY=!SPICY;try{store.set('nf-spicy',SPICY?'1':'0')}catch(_){}const b=e.currentTarget;b.classList.toggle('on',SPICY);b.setAttribute('aria-pressed',String(SPICY));$('mready').textContent=(isNew?'Ready!':'Go!')+(SPICY?' \u{1F336}\uFE0F':'');play(SPICY?'tick':'look')};
+  $('ml').innerHTML=`<div class="mintro">${isNew?'<span class="ribbon">New!</span>':''}<div class="mtitle">${gm.title}</div>${gm.legend?`<span class="how">${gm.how}</span>${gm.legend}`:`<p>${gm.hint}</p>`}<div class="mgo-row">${isNew?'':`<button class="spice${SPICY?' on':''}" id="spice" role="switch" aria-checked="${SPICY}"><span class="sw"><i></i></span><span class="st"><b>\u{1F336}\uFE0F Spicy</b><small>harder \u00b7 \u00d72 pts</small></span></button>`}<button class="btn" id="mready">${isNew?'Ready!':'Go!'}</button></div></div>`;
+  if(!isNew)$('spice').onclick=e=>{e.stopPropagation();SPICY=!SPICY;try{store.set('nf-spicy',SPICY?'1':'0')}catch(_){}const b=e.currentTarget;b.classList.toggle('on',SPICY);b.setAttribute('aria-checked',String(SPICY));play(SPICY?'tick':'look')};
   play('alarm');
-  const go=()=>{if(MS.phase!=='intro')return;MS.phase='go';MS.s.sp=SPICY;if(gm.spice)gm.spice(MS.s);$('ml').innerHTML=`<div class="mgo">Go!${SPICY?' \u{1F336}\uFE0F':''}</div>`;setTimeout(()=>{if(MS&&MS.phase==='go'){MS.phase='play';MS.t=0;$('ml').innerHTML=SPICY?'<span class="spbadge">\u{1F336}\uFE0F</span>':''}},500)};
+  const go=()=>{if(MS.phase!=='intro')return;MS.phase='go';MS.s.sp=SPICY&&!isNew;if(gm.spice)gm.spice(MS.s);$('ml').innerHTML=`<div class="mgo">Go!${MS.s.sp?' \u{1F336}\uFE0F':''}</div>`;setTimeout(()=>{if(MS&&MS.phase==='go'){MS.phase='play';MS.t=0;$('ml').innerHTML=MS.s.sp?'<span class="spbadge">\u{1F336}\uFE0F</span>':''}},500)};
   arm($('mready'),isNew?1200:700);$('mready').onclick=e=>{e.stopPropagation();if(isNew){MSEEN.push(key);try{store.set('ns-mseen',JSON.stringify(MSEEN))}catch(_){}}go()};
   const pos=e=>{const r=mcv.getBoundingClientRect();return [(e.clientX-r.left)/r.width*MW,(e.clientY-r.top)/r.height*MH]};
   mcv.oncontextmenu=e=>e.preventDefault();$('ml').oncontextmenu=e=>e.preventDefault();mcv.onpointerdown=e=>{e.preventDefault();if(!MS||MS.phase!=='play')return;mcv.setPointerCapture&&mcv.setPointerCapture(e.pointerId);const [x,y]=pos(e);gm.move&&gm.move(MS.s,x,y);gm.down&&gm.down(MS.s,x,y)};
