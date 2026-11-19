@@ -3,16 +3,11 @@ layout: default
 ---
 
 <div class="posts">
-  {% for post in site.posts %}
-    <article class="post">
-
-      <h1><a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a></h1>
-
-      <div class="entry">
-        {{ post.excerpt }}
-      </div>
-
-      <a href="{{ site.baseurl }}{{ post.url }}" class="read-more">Read More</a>
-    </article>
-  {% endfor %}
+  <article class="post">
+    <h1><a href="{{ site.baseurl }}/nappy-files/">The Nappy Files</a></h1>
+    <div class="entry">
+      <p>A tiny detective game about new-parent chaos. Three new cases every day: look around the room, work out what made the baby scream, and survive the interruptions.</p>
+    </div>
+    <a href="{{ site.baseurl }}/nappy-files/" class="read-more">Play</a>
+  </article>
 </div>
