@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="A tiny detective game about new-parent chaos. Three cases a day.">
+<meta name="description" content="A tiny detective game about new-parent chaos.">
 <title>The Nappy Files</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -102,6 +102,7 @@ a.btn{display:inline-block;text-decoration:none;text-align:center}
 .tline b.warn{background:#e8b23a}.tline.low{animation:tl .5s steps(1) infinite}@keyframes tl{50%{border-color:#b8432a;box-shadow:0 0 0 2px rgba(184,67,42,.4)}}
 .worth.low{display:inline-block;font-size:1.25em;animation:wl 1s ease-in-out infinite}@keyframes wl{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}}
 .btn.more{background:#e8b23a;color:var(--ink);width:min(100%,320px);margin-top:4px}
+.stg-ribbon{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);left:max(10px,env(safe-area-inset-left,0px));z-index:90;background:#b8432a;color:#fff;font:800 11px/1 system-ui,sans-serif;letter-spacing:.12em;padding:5px 8px;border-radius:6px;border:1.5px solid #3a2416;pointer-events:none;opacity:.9}
 #pause{position:fixed;inset:0;z-index:80;background:rgba(43,31,23,.94);display:grid;place-items:center;padding:16px}#pause .pcard{background:var(--card,#f6ead2);border:2px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:20px 22px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
 #bigc{position:fixed;transform:translate(-50%,-50%);z-index:55;pointer-events:none;font-family:var(--display);font-size:72px;line-height:1;color:#fbf3e2;-webkit-text-stroke:3px #3a2416;paint-order:stroke;text-shadow:3px 3px 0 #3a2416;opacity:0}#bigc.hot{color:#e25f4a;font-size:96px}#bigc.beat{animation:beat 1s ease-out both}@keyframes beat{0%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}15%{opacity:.95;transform:translate(-50%,-50%) scale(1)}80%{opacity:.75}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
 @media (prefers-reduced-motion:reduce){#bigc.beat,.worth.low,.tline.low{animation:none}#bigc{opacity:.8}}
@@ -189,6 +190,10 @@ header.card::after{content:"";position:absolute;left:14px;right:14px;bottom:-10p
 </div>
 
 <script>
+// Staging keeps its own saved data: every key gets a "stg-" prefix when the page runs from /nappy-files-staging/.
+const STAGING=/\/nappy-files-staging\//.test(location.pathname),KEY=k=>(STAGING?'stg-':'')+k;
+const store={get:k=>localStorage.getItem(KEY(k)),set:(k,v)=>localStorage.setItem(KEY(k),v),rm:k=>localStorage.removeItem(KEY(k))};
+if(STAGING)document.addEventListener('DOMContentLoaded',()=>{const r=document.createElement('div');r.className='stg-ribbon';r.textContent='STAGING';document.body.appendChild(r)});
 (function(){
 const $=id=>document.getElementById(id);
 let RAND=Math.random;
@@ -495,7 +500,7 @@ function diorama(c,mode){
   {let r=(c.w.length*7+c.t.length*13+c.lv*5)%97;const rn=()=>{r=(r*37+11)%97;return r/97};for(let k=0;k<6;k++){const p=P(.6+rn()*4.8,.6+rn()*4.8,0);s+=`<path d="M${p[0].toFixed(1)} ${p[1].toFixed(1)} q${(4+rn()*6).toFixed(1)} ${(-2+rn()*3).toFixed(1)} ${(10+rn()*8).toFixed(1)} ${(rn()*2).toFixed(1)}" stroke="#f6ead2" stroke-width=".7" opacity=".45" fill="none" pointer-events="none"/>`}}
   if(c.sky==='dusk')s+=`<rect x="-400" y="-400" width="1200" height="1200" fill="#ff8a5a" opacity=".1" pointer-events="none"/>`;
   if(c.sky!=='day'&&ROOMS[c.room].lamp){const p=P(.55,.55,2.65);s+=`<circle cx="${p[0]}" cy="${p[1]}" r="70" fill="url(#glow)" pointer-events="none"/>`}
-  let coachDone=true;try{coachDone=!!localStorage.getItem('ns-tap')}catch(_){}
+  let coachDone=true;try{coachDone=!!store.get('ns-tap')}catch(_){}
   const coachI=mode==='play'&&!coachDone&&c.seen.length===0?(()=>{const cand=tags.filter(t=>t.o.key&&!t.o.wall);if(!cand.length)return -1;const busy=t=>tags.filter(u=>u!==t&&Math.abs(u.tp[0]-t.tp[0])<44&&u.tp[1]<t.tp[1]+4&&u.tp[1]>t.tp[1]-64).length+(t.tp[1]<70?5:0);return cand.sort((a,b)=>busy(a)-busy(b))[0].i})():-1;
   tags.forEach(({i,o,tp,seen})=>{
     if(mode==='show'&&!o.key)return;
@@ -518,7 +523,7 @@ function zoomSVG(c,i){const o=c.objs[i];let body,vb;
 
 /* ---------- sound ---------- */
 const AU={ctx:null,on:true,mt:0,mi:0};
-try{if(localStorage.getItem('cf-sound')==='off')AU.on=false}catch(_){}
+try{if(store.get('cf-sound')==='off')AU.on=false}catch(_){}
 const midi=n=>440*Math.pow(2,(n-69)/12);
 function audioInit(){if(AU.ctx){if(AU.ctx.state!=='running')AU.ctx.resume().then(sndUI,()=>{});return}const A=window.AudioContext||window.webkitAudioContext;if(!A)return;try{AU.ctx=new A()}catch(_){return}
   try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(_){}
@@ -537,7 +542,7 @@ function music(){const c=AU.ctx;if(!c||c.state!=='running'||!AU.on)return;const 
 
 /* ================= interruption mini-games (cosy canvas) ================= */
 let GRAIN_URL='';function GRAIN(){if(GRAIN_URL)return GRAIN_URL;try{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d'),d=x.createImageData(128,128);for(let i=0;i<d.data.length;i+=4){const v=Math.random();d.data[i]=58;d.data[i+1]=36;d.data[i+2]=22;d.data[i+3]=v<.5?0:Math.round((v-.5)*90)}x.putImageData(d,0,0);GRAIN_URL=c.toDataURL()}catch(_){GRAIN_URL='data:,'}return GRAIN_URL}
-const doneToday=()=>{try{return localStorage.getItem('nf-day')===String(todayNo())}catch(_){return false}};
+const doneToday=()=>{try{return store.get('nf-day')===String(todayNo())}catch(_){return false}};
 const MW=320,MH=240;
 let mcv=null,mg=null;
 function mSetup(){mcv=$('mc');const dpr=Math.min(3,window.devicePixelRatio||1);mcv.width=MW*dpr;mcv.height=MH*dpr;mg=mcv.getContext('2d');mg.setTransform(dpr,0,0,dpr,0,0)}
@@ -707,7 +712,7 @@ const MLINES={
   shh:{win:['Escaped! Freedom tastes like cold tea.','Out. Do not sneeze.'],seen:['Baby saw you. Baby is thrilled.','Eye contact. It is party time now.'],slow:['Still in the room. You live here now.']}
 };
 let MS=null,mRaf=null,mLast=0;
-let MSEEN=[];try{MSEEN=JSON.parse(localStorage.getItem('ns-mseen')||'[]')||[]}catch(_){MSEEN=[]}
+let MSEEN=[];try{MSEEN=JSON.parse(store.get('ns-mseen')||'[]')||[]}catch(_){MSEEN=[]}
 function runMini(key,done){
   const gm=MINIS[key];MS={key,gm,s:{},t:0,phase:'intro',done};gm.init(MS.s);S.phase='mini';head();
   const isNew=!MSEEN.includes(key);
@@ -718,7 +723,7 @@ function runMini(key,done){
   $('ml').innerHTML=`<div class="mintro">${isNew?'<span class="ribbon">New!</span>':''}<div class="mtitle">${gm.title}</div>${gm.legend?`<span class="how">${gm.how}</span>${gm.legend}`:`<p>${gm.hint}</p>`}<button class="btn" id="mready">${isNew?'Ready!':'Go!'}</button></div>`;
   play('alarm');
   const go=()=>{if(MS.phase!=='intro')return;MS.phase='go';$('ml').innerHTML='<div class="mgo">Go!</div>';setTimeout(()=>{if(MS&&MS.phase==='go'){MS.phase='play';MS.t=0;$('ml').innerHTML=''}},500)};
-  arm($('mready'),isNew?1200:700);$('mready').onclick=e=>{e.stopPropagation();if(isNew){MSEEN.push(key);try{localStorage.setItem('ns-mseen',JSON.stringify(MSEEN))}catch(_){}}go()};
+  arm($('mready'),isNew?1200:700);$('mready').onclick=e=>{e.stopPropagation();if(isNew){MSEEN.push(key);try{store.set('ns-mseen',JSON.stringify(MSEEN))}catch(_){}}go()};
   const pos=e=>{const r=mcv.getBoundingClientRect();return [(e.clientX-r.left)/r.width*MW,(e.clientY-r.top)/r.height*MH]};
   mcv.oncontextmenu=e=>e.preventDefault();$('ml').oncontextmenu=e=>e.preventDefault();mcv.onpointerdown=e=>{e.preventDefault();if(!MS||MS.phase!=='play')return;mcv.setPointerCapture&&mcv.setPointerCapture(e.pointerId);const [x,y]=pos(e);gm.move&&gm.move(MS.s,x,y);gm.down&&gm.down(MS.s,x,y)};
   mcv.onpointermove=e=>{if(!MS||MS.phase!=='play')return;const [x,y]=pos(e);gm.move&&gm.move(MS.s,x,y)};
@@ -739,12 +744,12 @@ function mEnd(win,why){if(!MS||MS.phase!=='play')return;MS.phase='over';MS.s.don
 
 /* ---------- flow ---------- */
 const S={phase:'title',n:0,results:[],c:null,score:0,minis:[],bonus:{looks:0,time:0},shift:[]};
-let tick=null,hintsLeft=3;try{hintsLeft=3-(+localStorage.getItem('cf-hints')||0)}catch(_){}
+let tick=null,hintsLeft=3;try{hintsLeft=3-(+store.get('cf-hints')||0)}catch(_){}
 const stop=()=>{const bc=$('bigc');if(bc)bc.remove();if(tick){clearInterval(tick);tick=null}};
 function clearToasts(){document.querySelectorAll('.toast').forEach(t=>t.remove())}
 function head(){if(S.phase!==head.last){clearToasts();head.last=S.phase}M.classList.toggle('mid',['title','mini','rank'].includes(S.phase));$('caseNo').textContent=S.phase==='case'||S.phase==='solved'?`Case ${S.n+1}/3 \u00b7 ${LEVELS[Math.min(S.n,2)].name.split(' ')[0]}`:S.phase==='mini'?'Baby!':'';const c=S.c;const tb=$('tbar');
   if(!c||!c.timeMax||S.phase!=='case'){tb.hidden=true;return}tb.hidden=false;const f=Math.max(0,c.timeLeft/c.timeMax);$('tfill').style.width=(f*100)+'%';tb.style.setProperty('--c',f>.5?'#5b6628':f>.25?'#c8612b':'#b8432a')}
-const ls={get(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(_){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}}};
+const ls={get(k){try{return JSON.parse(store.get(k)||'null')}catch(_){return null}},set(k,v){try{store.set(k,JSON.stringify(v))}catch(_){}}};
 function trailHTML(results,minis,pts){const cell=k=>{const r=results[k];return `<span class="tc ${r||''}">${r==='good'?'\u2713':r==='mid'?'\u00bd':r==='bad'?'\u2717':'?'}${pts&&pts[k]!=null?`<em>${pts[k]}</em>`:''}</span>`},
   mini=k=>`<span class="tb ${minis[k]===true?'good':minis[k]===false?'bad':''}">${minis[k]===true?'\u2605':minis[k]===false?'z':'!'}</span>`;
   return `<div class="trail">${[cell(0),mini(0),cell(1),mini(1),cell(2)].join('<i></i>')}</div>`}
@@ -775,7 +780,7 @@ function renderCase(flash){const c=S.c,L=LEVELS[c.lv];head();
     <div class="zoom${flash?' flash':''}">${lo?`${zoomSVG(c,c.last)}<div class="txt"><b>${lo.name}</b>${lo.clue}</div>`:`<div class="txt"><b>Magnifier</b>${c.looks>50?'Tap things in the room to look closer.':`Only ${c.looks} looks now. Pick carefully.`}</div>`}${left!=null?`<span class="cnt" aria-label="${left} looks left"><i>${Array.from({length:c.looks},(_,k)=>`<b class="${k<left?'':'u'}"></b>`).join('')}</i>looks</span>`:''}</div>
     <div class="row" style="justify-content:space-between"><h2 style="font-size:inherit">What happened?</h2><span class="label tries">${[0,1].map(k=>`<b class="${k<c.wrong.length?'x':''}"></b>`).join('')} tries · wrong −8s</span></div>
     <div class="opts${c.opts.length>4?' six':''}">${c.opts.map(([w,t],k)=>`<button class="opt${c.wrong.includes(k)?' crossed':''}" data-ans="${k}" ${c.wrong.includes(k)?'disabled':''}>${storyName(w,t)}</button>`).join('')}</div>`;
-  M.querySelectorAll('.diorama [data-obj]').forEach(g=>{const act=()=>{const i=+g.dataset.obj;let fl=false;try{localStorage.setItem('ns-tap','1')}catch(_){}if(!c.seen.includes(i)){if(!c.objs[i].wall&&looksUsed(c)>=c.looks){const n=M.querySelector('.zoom .cnt');if(n){n.classList.remove('nope');void n.offsetWidth;n.classList.add('nope')}play('bad');return}c.seen.push(i);play('look');if(hintsLeft>0){fl=true;hintsLeft--;try{localStorage.setItem('cf-hints',3-hintsLeft)}catch(_){}}}c.last=i;renderCase(fl)};
+  M.querySelectorAll('.diorama [data-obj]').forEach(g=>{const act=()=>{const i=+g.dataset.obj;let fl=false;try{store.set('ns-tap','1')}catch(_){}if(!c.seen.includes(i)){if(!c.objs[i].wall&&looksUsed(c)>=c.looks){const n=M.querySelector('.zoom .cnt');if(n){n.classList.remove('nope');void n.offsetWidth;n.classList.add('nope')}play('bad');return}c.seen.push(i);play('look');if(hintsLeft>0){fl=true;hintsLeft--;try{store.set('cf-hints',3-hintsLeft)}catch(_){}}}c.last=i;renderCase(fl)};
     g.addEventListener('click',act);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act()}})});
   M.querySelectorAll('[data-ans]').forEach(b=>b.onclick=()=>guess(+b.dataset.ans));
   worth()}
@@ -803,13 +808,13 @@ function solve(){stop();const c=S.c;S.phase='solved';head();
 function rank(){S.phase='rank';stop();head();const r=rankFor(S.score);play('rank');
   const icons=S.results.map(x=>x==='good'?'\u{1F7E9}':x==='mid'?'\u{1F7E8}':'\u{1F7E5}').join('')+' '+S.minis.map(w=>w?'\u2B50':'\u{1F4A4}').join('');
   const GAME_URL='https://hnphan.github.io/nappy-files/';const share0=S.daily?`The Nappy Files #${todayNo()} \u{1F476}\n${icons} ${S.score} pts\n${r}\nSame 3 cases for everyone today. Can you beat me?`:`The Nappy Files \u{1F476} ${icons} ${S.score} pts. ${r}`;const share=share0+'\n'+GAME_URL;
-  if(S.daily){ls.set('nf-res',{day:todayNo(),score:S.score,r,results:S.results,minis:S.minis,pts:S.pts,share,share0});try{localStorage.setItem('nf-day',String(todayNo()))}catch(_){}}
+  if(S.daily){ls.set('nf-res',{day:todayNo(),score:S.score,r,results:S.results,minis:S.minis,pts:S.pts,share,share0});try{store.set('nf-day',String(todayNo()))}catch(_){}}
   M.innerHTML=`<div class="center"><div class="label">Your rank \u00b7 ${S.score} pts</div><div class="verdict v-good">${r}</div><p class="note" style="margin:0">${rnd(SIGNOFF.filter(x=>!S.notifShown||!NKEY(S.notifShown).test(x)))}</p>
     ${trailHTML(S.results,S.minis,S.pts)}
     ${shareHTML(share)}<button class="btn more" id="again">Play more \u25B8</button></div>`;
   arm($('again'),1200);$('again').onclick=()=>newShift(false);bindShare(share,share0)}
 function sel(){const el=$('share');const s=getSelection(),r=document.createRange();r.selectNodeContents(el);s.removeAllRanges();s.addRange(r)}
-function toggleSound(){const live=AU.wasLive!==undefined?AU.wasLive:(AU.ctx&&AU.ctx.state==='running');AU.wasLive=undefined;if(AU.on&&!live){audioInit();setTimeout(()=>{sndUI();play('look')},120);return}AU.on=!AU.on;if(AU.master)AU.master.gain.value=AU.on?.5:0;try{localStorage.setItem('cf-sound',AU.on?'on':'off')}catch(_){}audioInit();sndUI();if(AU.on)play('look')}
+function toggleSound(){const live=AU.wasLive!==undefined?AU.wasLive:(AU.ctx&&AU.ctx.state==='running');AU.wasLive=undefined;if(AU.on&&!live){audioInit();setTimeout(()=>{sndUI();play('look')},120);return}AU.on=!AU.on;if(AU.master)AU.master.gain.value=AU.on?.5:0;try{store.set('cf-sound',AU.on?'on':'off')}catch(_){}audioInit();sndUI();if(AU.on)play('look')}
 $('snd').onclick=toggleSound;sndUI();
 function playing(){return S.phase==='case'||(S.phase==='mini'&&MS&&MS.phase==='play')}
 function pauseGame(){if(AU.ctx&&AU.ctx.state==='running')AU.ctx.suspend().catch(()=>{});if(playing()&&!S.paused){S.paused=true;if(MS&&MS.s){const g=MS.s;if(MS.key==='pour'&&g.on){g.on=false;MS.gm.judge(g)}g.walk=false;g.held=false}}}
