@@ -414,6 +414,7 @@ const NOTIFS=[
  ['\u{1F475}','Your mum','Have you tried putting her down drowsy but awake?'],
 
 ];
+const NKEY=w=>({'Grandma':/grandma/i,'Your mum':/\bmum\b/i,'Baby group chat':/group chat/i,'ChatGPT':/chatgpt/i,'Instagram':/instagram/i,'Screen time':/screen time/i,'Photos':/photos/i}[w]||new RegExp(w,'i'));
 const SIGNOFF=['Faster than asking ChatGPT at 3am.','More reliable than ChatGPT and a parenting forum combined.','ChatGPT would have said "every baby is different".','ChatGPT is still typing...','Grandma has already shared this to Facebook.','Your mum friends will be hearing about this.'];
 const rankFor=sc=>RANKS.filter(r=>sc>=r[0]).pop()[1];
 function boxesFor(o){const d=OBJ[o.sp],h=d.top[2];const ps=[];[0,h].forEach(z=>[[0,0],[d.w,0],[0,d.d],[d.w,d.d]].forEach(([a,b])=>ps.push(P(o.x+a,o.y+b,z))));
@@ -761,10 +762,10 @@ function title(){S.phase='title';stop();head();
   if(done)bindShare(res.share,res.share0);
   $('go').onclick=()=>{audioInit();setTimeout(sndUI,150);if(done)newShift(false);else if(live)resume(run);else newShift(true)}}
 function resume(run){Object.assign(S,{daily:true,seed:run.seed,results:run.results,pts:run.pts||[],score:run.score,minis:run.minis,ws:run.ws,bonus:run.bonus,shift:run.shift});S.n=run.nextN;if(S.n>=3)rank();else openCase()}
-function newShift(daily){S.daily=!!daily;S.pts=[];{const R=daily?mulberry(todayNo()*104729+7):Math.random;S.notif={n:Math.floor(R()*3),i:Math.floor(R()*NOTIFS.length),delay:2000+R()*7000}}S.seed=daily?todayNo()*7919+13:Math.floor(Math.random()*1e9);RAND=mulberry(S.seed);S.n=0;S.ws=[];S.results=[];S.score=0;S.minis=[];S.bonus={looks:0,time:0};S.shift=shuffle(Object.keys(MINIS)).slice(0,2);openCase()}
+function newShift(daily){S.daily=!!daily;S.pts=[];S.notifShown=null;{const R=daily?mulberry(todayNo()*104729+7):Math.random;S.notif={n:Math.floor(R()*3),i:Math.floor(R()*NOTIFS.length),delay:2000+R()*7000}}S.seed=daily?todayNo()*7919+13:Math.floor(Math.random()*1e9);RAND=mulberry(S.seed);S.n=0;S.ws=[];S.results=[];S.score=0;S.minis=[];S.bonus={looks:0,time:0};S.shift=shuffle(Object.keys(MINIS)).slice(0,2);openCase()}
 function openCase(){RAND=mulberry(S.seed*31+S.n*977+1);const c=makeCase(S.n,(S.ws||[]).slice(0,S.n));(S.ws=S.ws||[])[S.n]=c.w,L=LEVELS[c.lv];S.c=c;
   c.looks=L.looks>50?99:L.looks+S.bonus.looks;c.timeMax=L.time?Math.max(15,L.time+S.bonus.time):0;c.timeLeft=c.timeMax;c.wrong=[];c.bonusNote=S.n>0&&L.time?(S.bonus.time>0?'+1 look, +10s':'-10s'):'';S.bonus={looks:0,time:0};
-  S.phase='case';if(S.daily)saveRun({results:[...S.results,'bad'],pts:[...S.pts,0]});play('open');renderCase();const nf=S.notif;if(nf&&S.n===nf.n){const n0=S.n,[ic,who,msg]=NOTIFS[nf.i];setTimeout(()=>{if(S.phase==='case'&&S.n===n0)toast(`<i>${ic}</i><span><b>${who} \u00b7 now</b>${msg}</span>`,'notif')},nf.delay)}
+  S.phase='case';if(S.daily)saveRun({results:[...S.results,'bad'],pts:[...S.pts,0]});play('open');renderCase();const nf=S.notif;if(nf&&S.n===nf.n){const room=c.objs.map(o=>o.name+' '+o.clue).join(' ');let k=nf.i;for(let q=0;q<NOTIFS.length;q++){const cand=(nf.i+q)%NOTIFS.length;if(!NKEY(NOTIFS[cand][1]).test(room)){k=cand;break}}S.notifShown=NOTIFS[k][1];const n0=S.n,[ic,who,msg]=NOTIFS[k];setTimeout(()=>{if(S.phase==='case'&&S.n===n0)toast(`<i>${ic}</i><span><b>${who} \u00b7 now</b>${msg}</span>`,'notif')},nf.delay)}
   if(c.timeMax){stop();let grace=15;tick=setInterval(()=>{if(S.paused)return;if(grace>0){grace--;return}c.timeLeft-=.1;head();worth();const dv=M.querySelector('.diorama');if(dv)dv.classList.toggle('urgent',c.timeLeft<10);const sec=Math.ceil(c.timeLeft);if(sec!==c.lastSec){c.lastSec=sec;if(sec===20){toast('20 seconds left!');play('tick')}if(sec<=10&&sec>0){countdown(sec);if(AU.on&&AU.ctx)tone(700+(10-sec)*90,.06,{vol:sec<=3?.12:.07,type:'square'});try{if(sec<=5&&navigator.vibrate)navigator.vibrate(30)}catch(_){}}}if(c.timeLeft<=0){c.timeLeft=0;c.pick=null;solve()}},100)}}
 function renderCase(flash){const c=S.c,L=LEVELS[c.lv];head();
   const lo=c.last!=null?c.objs[c.last]:null,left=c.looks>50?null:c.looks-looksUsed(c);
@@ -802,7 +803,7 @@ function rank(){S.phase='rank';stop();head();const r=rankFor(S.score);play('rank
   const icons=S.results.map(x=>x==='good'?'\u{1F7E9}':x==='mid'?'\u{1F7E8}':'\u{1F7E5}').join('')+' '+S.minis.map(w=>w?'\u2B50':'\u{1F4A4}').join('');
   const GAME_URL='https://hnphan.github.io/nappy-files/';const share0=S.daily?`The Nappy Files #${todayNo()} \u{1F476}\n${icons} ${S.score} pts\n${r}\nSame 3 cases for everyone today. Can you beat me?`:`The Nappy Files \u{1F476} ${icons} ${S.score} pts. ${r}`;const share=share0+'\n'+GAME_URL;
   if(S.daily){ls.set('nf-res',{day:todayNo(),score:S.score,r,results:S.results,minis:S.minis,pts:S.pts,share,share0});try{localStorage.setItem('nf-day',String(todayNo()))}catch(_){}}
-  M.innerHTML=`<div class="center"><div class="label">Your rank \u00b7 ${S.score} pts</div><div class="verdict v-good">${r}</div><p class="note" style="margin:0">${rnd(SIGNOFF)}</p>
+  M.innerHTML=`<div class="center"><div class="label">Your rank \u00b7 ${S.score} pts</div><div class="verdict v-good">${r}</div><p class="note" style="margin:0">${rnd(SIGNOFF.filter(x=>!S.notifShown||!NKEY(S.notifShown).test(x)))}</p>
     ${trailHTML(S.results,S.minis,S.pts)}
     ${shareHTML(share)}<button class="btn ghost" id="again">Random files</button></div>`;
   arm($('again'),1200);$('again').onclick=()=>newShift(false);bindShare(share,share0)}
