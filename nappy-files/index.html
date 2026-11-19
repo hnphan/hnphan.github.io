@@ -500,7 +500,6 @@ function diorama(c,mode){
   if(c.sky!=='day'&&ROOMS[c.room].lamp){const p=P(.55,.55,2.65);s+=`<circle cx="${p[0]}" cy="${p[1]}" r="70" fill="url(#glow)" pointer-events="none"/>`}
   let coachDone=true;try{coachDone=!!localStorage.getItem('ns-tap')}catch(_){}
   const coachI=mode==='play'&&!coachDone&&c.seen.length===0?(()=>{const cand=tags.filter(t=>t.o.key&&!t.o.wall);if(!cand.length)return -1;const busy=t=>tags.filter(u=>u!==t&&Math.abs(u.tp[0]-t.tp[0])<44&&u.tp[1]<t.tp[1]+4&&u.tp[1]>t.tp[1]-64).length+(t.tp[1]<70?5:0);return cand.sort((a,b)=>busy(a)-busy(b))[0].i})():-1;
-  eyes.forEach(([x,y])=>{s+=`<g pointer-events="none" transform="translate(${x.toFixed(1)} ${(y-9).toFixed(1)})"><circle r="7.5" fill="#f6ead2" stroke="#3a2416" stroke-width=".9"/><ellipse rx="5" ry="3.1" fill="#fff" stroke="#3a2416" stroke-width=".8"/><circle r="1.7" fill="#3a2416"/></g>`});
   tags.forEach(({i,o,tp,seen})=>{
     if(mode==='show'&&!o.key)return;
     const [x,y]=tp;const used=mode!=='show'&&!seen&&!o.wall&&looksUsed(c)>=(c.looks||L.looks);
