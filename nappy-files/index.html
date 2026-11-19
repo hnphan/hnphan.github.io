@@ -101,6 +101,7 @@ a.btn{display:inline-block;text-decoration:none;text-align:center}
 .diorama .pill.used{opacity:.4}.zoom .cnt.nope{animation:nope .4s}@keyframes nope{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 .tline b.warn{background:#e8b23a}.tline.low{animation:tl .5s steps(1) infinite}@keyframes tl{50%{border-color:#b8432a;box-shadow:0 0 0 2px rgba(184,67,42,.4)}}
 .worth.low{display:inline-block;font-size:1.25em;animation:wl 1s ease-in-out infinite}@keyframes wl{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}}
+.btn.more{background:#e8b23a;color:var(--ink);width:min(100%,320px);margin-top:4px}
 #pause{position:fixed;inset:0;z-index:80;background:rgba(43,31,23,.94);display:grid;place-items:center;padding:16px}#pause .pcard{background:var(--card,#f6ead2);border:2px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:20px 22px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
 #bigc{position:fixed;transform:translate(-50%,-50%);z-index:55;pointer-events:none;font-family:var(--display);font-size:72px;line-height:1;color:#fbf3e2;-webkit-text-stroke:3px #3a2416;paint-order:stroke;text-shadow:3px 3px 0 #3a2416;opacity:0}#bigc.hot{color:#e25f4a;font-size:96px}#bigc.beat{animation:beat 1s ease-out both}@keyframes beat{0%{opacity:0;transform:translate(-50%,-50%) scale(1.6)}15%{opacity:.95;transform:translate(-50%,-50%) scale(1)}80%{opacity:.75}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
 @media (prefers-reduced-motion:reduce){#bigc.beat,.worth.low,.tline.low{animation:none}#bigc{opacity:.8}}
@@ -755,7 +756,7 @@ function title(){S.phase='title';stop();head();
   const res=ls.get('nf-res'),run=ls.get('nf-run');const done=res&&res.day===todayNo(),live=!done&&run&&run.day===todayNo();
   M.innerHTML=`<div class="center"><h2>Baby's screaming.<br>What happened?</h2>
     ${done?trailHTML(res.results,res.minis,res.pts):live?trailHTML(run.results,run.minis,run.pts):trailHTML([],[])}
-    ${done?`<span class="label">Today's files #${todayNo()} \u00b7 ${res.score} pts \u00b7 ${res.r}</span>${shareHTML(res.share)}<button class="btn ghost" id="go">Random files</button>`
+    ${done?`<span class="label">Today's files #${todayNo()} \u00b7 ${res.score} pts \u00b7 ${res.r}</span>${shareHTML(res.share)}<button class="btn more" id="go">Play more \u25B8</button>`
       :live?`<span class="label">Today's files \u00b7 #${todayNo()}</span><button class="btn" id="go">Carry on</button>`
       :`<span class="label">Today's files \u00b7 #${todayNo()}</span><button class="btn" id="go">Open the files</button>`}</div>`;
   M.querySelector('.center').insertAdjacentHTML('beforeend','<button class="chip" id="sndchip"></button>');sndUI();$('sndchip').onclick=toggleSound;
@@ -805,7 +806,7 @@ function rank(){S.phase='rank';stop();head();const r=rankFor(S.score);play('rank
   if(S.daily){ls.set('nf-res',{day:todayNo(),score:S.score,r,results:S.results,minis:S.minis,pts:S.pts,share,share0});try{localStorage.setItem('nf-day',String(todayNo()))}catch(_){}}
   M.innerHTML=`<div class="center"><div class="label">Your rank \u00b7 ${S.score} pts</div><div class="verdict v-good">${r}</div><p class="note" style="margin:0">${rnd(SIGNOFF.filter(x=>!S.notifShown||!NKEY(S.notifShown).test(x)))}</p>
     ${trailHTML(S.results,S.minis,S.pts)}
-    ${shareHTML(share)}<button class="btn ghost" id="again">Random files</button></div>`;
+    ${shareHTML(share)}<button class="btn more" id="again">Play more \u25B8</button></div>`;
   arm($('again'),1200);$('again').onclick=()=>newShift(false);bindShare(share,share0)}
 function sel(){const el=$('share');const s=getSelection(),r=document.createRange();r.selectNodeContents(el);s.removeAllRanges();s.addRange(r)}
 function toggleSound(){const live=AU.wasLive!==undefined?AU.wasLive:(AU.ctx&&AU.ctx.state==='running');AU.wasLive=undefined;if(AU.on&&!live){audioInit();setTimeout(()=>{sndUI();play('look')},120);return}AU.on=!AU.on;if(AU.master)AU.master.gain.value=AU.on?.5:0;try{localStorage.setItem('cf-sound',AU.on?'on':'off')}catch(_){}audioInit();sndUI();if(AU.on)play('look')}
