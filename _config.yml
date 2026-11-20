@@ -80,6 +80,7 @@ gems:
 # Exclude these files from your production _site
 exclude:
   - game-kit
+  - quiddle-src
   - Gemfile
   - Gemfile.lock
   - LICENSE
