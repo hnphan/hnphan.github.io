@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Quiddle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+/* =====================================================================
+   QUIDDLE: built from the game kit template (The Nappy Files).
+   Layout: a till receipt on the supermarket floor. One screen, phone first.
+   A yellow price sticker on top, four receipt lines to pick from.
+   Single look on purpose: works on any host theme.
+   ===================================================================== */
+:root{--bg:#17363a;--floor2:#1f4448;--card:#fbfbf6;--card2:#eceee4;--ink:#1c1f22;--muted:#5d6560;--accent:#e03a2e;--gold:#ffd400;--good:#1f8a4c;--bad:#e03a2e;
+  --display:'Archivo Black','Arial Black',Impact,sans-serif;--body:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;color-scheme:light}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg) radial-gradient(circle at 1px 1px,var(--floor2) 1px,transparent 1.5px) 0 0/14px 14px;color:var(--ink);font:500 14px/1.35 var(--body);overflow:hidden;-webkit-text-size-adjust:100%}
+.wrap{max-width:460px;height:100%;margin:0 auto;display:flex;flex-direction:column;gap:12px;
+  padding:max(10px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 2px;flex:none;color:var(--card)}
+h1{font:400 22px var(--display);margin:0;letter-spacing:.01em}h1 span{color:var(--gold)}
+.meta{display:flex;align-items:center;gap:10px;font-weight:700;font-size:13px}
+/* the receipt: torn zig-zag bottom edge */
+main{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:16px 14px 26px;background:var(--card);border-radius:4px 4px 0 0;box-shadow:0 10px 24px rgba(0,0,0,.35);
+  -webkit-mask:linear-gradient(#000 0 0) top/100% calc(100% - 10px) no-repeat,conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/16px 10px repeat-x;
+  mask:linear-gradient(#000 0 0) top/100% calc(100% - 10px) no-repeat,conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/16px 10px repeat-x}
+main.mid{justify-content:center}
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
+.label{font-weight:700;font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.note{margin:0;color:var(--muted);font-weight:600}
+.verdict{font:400 26px var(--display);color:var(--good);margin:0;text-wrap:balance}
+.dash{width:100%;border-top:2px dashed #c9ccc2;flex:none}
+.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;width:100%}
+.btn{font:400 17px var(--display);color:var(--card);background:var(--ink);border:0;border-radius:6px;padding:12px 22px;cursor:pointer;transition:opacity .35s,transform .35s;letter-spacing:.02em}
+.btn:active{transform:translateY(2px)}
+.btn.ghost{background:var(--card2);color:var(--ink)}
+.btn.more{background:transparent;color:var(--ink);border:2px solid var(--ink);width:min(100%,300px);font-size:15px;padding:9px 18px}
+.btn.wa{background:var(--good)}
+.btn.arming{opacity:0;transform:translateY(6px);pointer-events:none}
+a.btn{display:inline-block;text-decoration:none;text-align:center}
+.btn:focus-visible,.opt:focus-visible,.chip:focus-visible,.snd:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.chip{font:inherit;font-weight:700;font-size:12px;background:transparent;border:1.5px dashed var(--muted);color:var(--muted);border-radius:99px;padding:5px 12px;cursor:pointer}
+.snd{width:38px;height:38px;border-radius:50%;border:2px solid var(--card);background:transparent;color:var(--card);font-size:17px;display:grid;place-items:center;cursor:pointer;position:relative;flex:none}
+.snd[aria-pressed="false"]{opacity:.6}.snd[aria-pressed="false"]::after{content:'';position:absolute;left:8px;right:8px;top:50%;height:2px;background:currentColor;transform:rotate(-40deg)}
+.snd.locked{opacity:1;animation:sndp 1.6s ease-in-out infinite}.snd.locked::after{display:none}
+@keyframes sndp{50%{box-shadow:0 0 0 6px rgba(255,212,0,.4)}}
+/* results trail */
+.trail{display:flex;align-items:center;margin:4px 0 16px}.trail i{width:8px;height:2px;background:var(--ink);opacity:.35}
+.trail span{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:2px solid var(--ink);font:400 17px var(--display);background:var(--card2);position:relative}
+.trail .good{background:var(--good);color:#fff;border-color:var(--good)}.trail .bad{background:var(--bad);color:#fff;border-color:var(--bad)}
+/* price sticker */
+.sticker{align-self:center;flex:none;margin-top:6px;background:var(--gold);color:var(--ink);font:400 50px/1 var(--display);padding:12px 22px 10px;border-radius:10px;transform:rotate(-3deg);box-shadow:3px 4px 0 rgba(0,0,0,.18);font-variant-numeric:tabular-nums;position:relative;animation:slap .45s cubic-bezier(.2,1.6,.4,1) both}
+.sticker small{display:block;font:700 11px var(--body);letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px;opacity:.75}
+.sticker.big{font-size:44px}
+@keyframes slap{from{transform:rotate(-12deg) scale(1.6);opacity:0}to{transform:rotate(-3deg) scale(1);opacity:1}}
+.q{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex:none}
+.q b{font-weight:700;font-size:14px}.q span{font-size:12px;color:var(--muted);font-weight:600}
+/* options as receipt lines */
+.opts{display:flex;flex-direction:column;gap:8px;flex:none}
+.opt{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:10px;width:100%;min-height:54px;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer;transition:background .25s,border-color .25s,opacity .25s,transform .1s}
+.opt:active{transform:translateY(1px)}
+.opt .e{font-size:22px;text-align:center}
+.opt .n{min-width:0}.opt .n b{display:block;font-weight:700;font-size:14px;line-height:1.2}.opt .n i{display:block;font-style:normal;font-size:11.5px;color:var(--muted);font-weight:600}
+.opt .p{font:400 17px var(--display);font-variant-numeric:tabular-nums;opacity:0;transform:translateX(6px);transition:opacity .3s,transform .3s}
+.opts.shown .opt{cursor:default}.opts.shown .p{opacity:1;transform:none}
+.opts.shown .opt:nth-child(2) .p{transition-delay:.12s}.opts.shown .opt:nth-child(3) .p{transition-delay:.24s}.opts.shown .opt:nth-child(4) .p{transition-delay:.36s}
+.opt.right{background:#e2f3e8;border-color:var(--good)}.opt.right .p{color:var(--good)}
+.opt.wrong{background:#fbe3e0;border-color:var(--bad)}.opt.wrong .p{color:var(--bad)}
+.opts.shown .opt:not(.right):not(.wrong){opacity:.62;border-color:#c9ccc2}
+.after{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;min-height:48px;margin-top:auto}
+.after>div{min-width:0}.after .verdict{font-size:21px;white-space:nowrap}.after small{display:block;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hide{visibility:hidden}
+/* floating messages */
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);z-index:60;max-width:min(92vw,420px);width:max-content;background:var(--bad);color:#fff;border-radius:10px;padding:8px 14px;font-weight:700;text-align:center;pointer-events:none;animation:tIn .3s cubic-bezier(.2,1.4,.4,1) both}
+.toast.out{animation:tOut .35s ease-in both}
+.toast.notif{background:#f4f5f0;color:var(--ink);text-align:left;display:flex;gap:10px;align-items:center;font-size:13px;font-weight:600;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.35);animation:nIn .55s cubic-bezier(.2,1.3,.35,1) both}
+.toast.notif.out{animation:nOut .4s ease-in both}.toast.notif b{display:block;font-size:11px;color:var(--muted)}.toast.notif i{font-style:normal;font-size:24px}
+@keyframes tIn{from{opacity:0;transform:translate(-50%,0) scale(.85)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes tOut{to{opacity:0;transform:translate(-50%,-8px)}}
+@keyframes nIn{0%{opacity:0;transform:translate(-50%,-140%)}60%{opacity:1}100%{opacity:1;transform:translate(-50%,0)}}
+@keyframes nOut{to{opacity:0;transform:translate(-50%,-140%)}}
+.stg-ribbon{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);left:10px;z-index:90;background:var(--bad);color:#fff;font:800 11px/1 system-ui,sans-serif;letter-spacing:.12em;padding:5px 8px;border-radius:6px;pointer-events:none}
+@media (orientation:landscape) and (max-height:500px){.wrap{display:none}body::after{content:'Turn your phone upright \1F4F1';position:fixed;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:22px;color:var(--card)}}
+@media (max-height:620px){main{padding:10px 12px 20px;gap:7px}.wrap{gap:6px}.sticker{font-size:40px;padding:9px 18px 8px}.opt{min-height:48px;padding:4px 10px}.opts{gap:6px}.after{min-height:44px}}
+@media (max-width:350px){h1{font-size:19px}.opt .n b{font-size:13px}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+.btn,.opt,header,h1,.sticker{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header><h1>Quid<span>dle</span></h1><div class="meta"><span id="roundNo"></span><button class="snd" id="snd" aria-pressed="true" aria-label="Sound">&#9834;</button></div></header>
+  <main id="main" aria-live="polite"></main>
+</div>
+
+<script>
+(()=>{
+/* =================== GAME CONFIG =================== */
+const GAME={
+  slug:'quiddle',
+  title:'Quiddle',
+  url:'https://hnphan.github.io/quiddle/',
+  day0:Date.UTC(2026,10,20),               // 20 Nov 2026 = Quiddle #1
+  rounds:5,
+  tagline:'Five price tags.<br>Guess what they buy.',
+  ranks:[[0,'Skint'],[100,'Rinsed'],[200,'Window shopper'],[300,'Savvy'],[400,'Bargain hunter'],[500,'Quiddle legend']],
+  signoffs:['Daylight robbery, every one.','Your bank app would like a word.','Grandma would be appalled.','Back to tap water then.'],
+  notifs:[['\u{1F475}','Grandma','In my day this was all a penny.'],['\u{1F4AC}','Group chat','Splitting the bill 8 ways again \u{1F643}'],['\u{1F3E6}','Bank','Payday is 9 days away.'],['\u{1F4F1}','Screen time','Up 23% this week.']]
+};
+
+/* ---------- PRICES: every one checked against a public source ----------
+   p = price in pence. src/when = where and when it was checked.
+   Keep prices at least 15% apart within a round (the generator enforces it). */
+const ITEMS=[
+  {e:'\u{1F964}',n:'Can of Coke',w:'Wagamama',p:430,src:'Wagamama receipt',when:'Nov 2026'},
+  {e:'\u{1F32D}',n:'Sausage roll',w:'Greggs',p:135,src:'Greggs via LBC',when:'Jan 2026'},
+  {e:'☕',n:'Latte',w:'Greggs',p:225,src:'Greggs via LBC',when:'Jan 2026'},
+  {e:'\u{1F96A}',n:'Lunch meal deal',w:'Greggs',p:425,src:'Greggs via GB News',when:'May 2026'},
+  {e:'\u{1F371}',n:'Big Deal: main, side, drink',w:'Greggs',p:525,src:'Greggs via GB News',when:'May 2026'},
+  {e:'\u{1F354}',n:'Big Mac',w:"McDonald's UK",p:549,src:'Big Mac Index',when:'Jul 2026'},
+  {e:'\u{1F96A}',n:'Meal deal',w:'Tesco \u00B7 with Clubcard',p:385,src:'Tesco',when:'Apr 2026'},
+  {e:'✨',n:'Finest meal deal',w:'Tesco \u00B7 with Clubcard',p:550,src:'Tesco',when:'Apr 2026'},
+  {e:'\u{1F95B}',n:'4 pints of milk',w:'Tesco \u00B7 semi-skimmed',p:175,src:'Tesco via Trolley',when:'Nov 2026'},
+  {e:'\u{1F96B}',n:'6 tins of Heinz beans',w:'Tesco',p:500,src:'Tesco',when:'Nov 2026'},
+  {e:'\u{1F438}',n:'Freddo',w:'Price on the pack',p:39,src:'Cadbury pack price',when:'Aug 2026'},
+  {e:'\u{1F48C}',n:'First class stamp',w:'Royal Mail',p:180,src:'Royal Mail',when:'Apr 2026'},
+  {e:'✉️',n:'Second class stamp',w:'Royal Mail',p:91,src:'Royal Mail',when:'Apr 2026'},
+  {e:'\u{1F3A7}',n:'Spotify Premium',w:'Spotify UK \u00B7 per month',p:1299,src:'Spotify',when:'Nov 2026'},
+  {e:'\u{1F393}',n:'Spotify Student',w:'Spotify UK \u00B7 per month',p:599,src:'Spotify',when:'Nov 2026'},
+  {e:'\u{1F4FA}',n:'Netflix with ads',w:'Netflix UK \u00B7 per month',p:799,src:'Netflix via LADbible',when:'Sep 2026'},
+  {e:'\u{1F37F}',n:'Netflix, no ads',w:'Netflix UK \u00B7 per month',p:1399,src:'Netflix via LADbible',when:'Sep 2026'},
+  {e:'\u{1F451}',n:'Netflix Premium',w:'Netflix UK \u00B7 per month',p:2099,src:'Netflix via LADbible',when:'Sep 2026'}
+];
+const money=p=>p<100?p+'p':'£'+(p/100).toFixed(2);
+
+/* ---------- staging-safe storage ---------- */
+const STAGING=new RegExp('/'+GAME.slug+'-staging/').test(location.pathname),KEY=k=>(STAGING?'stg-':'')+GAME.slug+'-'+k;
+const store={get:k=>{try{return localStorage.getItem(KEY(k))}catch(_){return null}},set:(k,v)=>{try{localStorage.setItem(KEY(k),v)}catch(_){}}};
+const ls={get:k=>{try{return JSON.parse(store.get(k)||'null')}catch(_){return null}},set:(k,v)=>store.set(k,JSON.stringify(v))};
+if(STAGING){const r=document.createElement('div');r.className='stg-ribbon';r.textContent='STAGING';document.body.appendChild(r)}
+
+/* ---------- helpers, seeded randomness, daily number ---------- */
+const $=id=>document.getElementById(id),M=$('main');
+let RAND=Math.random;
+const mulberry=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const rnd=a=>a[Math.floor(RAND()*a.length)];
+const shuffle=a=>a.map(v=>[RAND(),v]).sort((x,y)=>x[0]-y[0]).map(p=>p[1]);
+const todayNo=()=>{const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-GAME.day0)/864e5)+1};
+
+/* ---------- round builder: one true answer, three decoys clearly apart ---------- */
+const apart=(a,b)=>Math.abs(a-b)>=Math.max(20,.15*Math.min(a,b));
+function buildPlan(){
+  // Targets cycle through a seeded order of the whole list, so a target never repeats until all have had a turn.
+  const order=shuffle(ITEMS.map((_,i)=>i));
+  const rounds=[];
+  for(let r=0;r<GAME.rounds;r++){
+    const t=order[r%order.length],tp=ITEMS[t].p;
+    let pool=shuffle(ITEMS.map((_,i)=>i).filter(i=>i!==t&&apart(ITEMS[i].p,tp)));
+    // prefer plausible decoys: between a third and three times the price
+    const near=pool.filter(i=>ITEMS[i].p>=tp/3&&ITEMS[i].p<=tp*3);pool=[...near,...pool.filter(i=>!near.includes(i))];
+    const dec=[];for(const i of pool){if(dec.length===3)break;if(dec.every(j=>ITEMS[i].p!==ITEMS[j].p))dec.push(i)}
+    rounds.push({t,opts:shuffle([t,...dec])});
+  }
+  return rounds;
+}
+
+/* ---------- sound (from the kit) ---------- */
+const AU={ctx:null,on:store.get('sound')!=='off',mt:0,mi:0};
+const midi=n=>440*Math.pow(2,(n-69)/12);
+function audioInit(){if(AU.ctx){if(AU.ctx.state!=='running')AU.ctx.resume().then(sndUI,()=>{});return}const A=window.AudioContext||window.webkitAudioContext;if(!A)return;try{AU.ctx=new A()}catch(_){return}
+  try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(_){}
+  AU.master=AU.ctx.createGain();AU.master.gain.value=AU.on?.5:0;AU.master.connect(AU.ctx.destination);AU.music=AU.ctx.createGain();AU.music.gain.value=.16;AU.music.connect(AU.master);setInterval(music,100);AU.ctx.onstatechange=sndUI;sndUI()}
+function sndUI(){const b=$('snd'),live=AU.ctx&&AU.ctx.state==='running';b.classList.toggle('locked',AU.on&&!live);b.setAttribute('aria-pressed',String(AU.on&&!!live));b.setAttribute('aria-label',!AU.on?'Sound off':live?'Sound on':'Tap for sound');
+  const ch=$('sndchip');if(ch)ch.textContent=!AU.on?'\u{1F507} Sound off':live?'\u{1F50A} Sound on':'\u{1F508} Tap for sound'}
+function toggleSound(){const live=AU.wasLive!==undefined?AU.wasLive:(AU.ctx&&AU.ctx.state==='running');AU.wasLive=undefined;if(AU.on&&!live){audioInit();setTimeout(()=>{sndUI();play('ping')},120);return}
+  AU.on=!AU.on;if(AU.master)AU.master.gain.value=AU.on?.5:0;store.set('sound',AU.on?'on':'off');audioInit();sndUI();if(AU.on)play('ping')}
+function tone(f,d,o={}){if(!AU.ctx)return;const c=AU.ctx,t=(o.at??c.currentTime)+(o.delay||0),os=c.createOscillator(),g=c.createGain();os.type=o.type||'triangle';os.frequency.setValueAtTime(f,t);if(o.slide)os.frequency.exponentialRampToValueAtTime(Math.max(30,f*o.slide),t+d);
+  const v=o.vol||.14;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.01);g.gain.setValueAtTime(v,t+d*.5);g.gain.exponentialRampToValueAtTime(.0001,t+d);os.connect(g);g.connect(o.dest||AU.master);os.start(t);os.stop(t+d+.05)}
+const seq=(ns,st,o={})=>ns.forEach((n,i)=>n&&tone(midi(n),o.len||st*1.2,{...o,delay:i*st}));
+const SFX={ping:()=>seq([79,86],.06,{vol:.12,type:'sine',len:.2}),
+  till:()=>{seq([84,91],.07,{vol:.12,type:'square',len:.07});tone(midi(96),.5,{delay:.16,vol:.1,type:'sine'})},  // ka-ching
+  bad:()=>{seq([67,63],.16,{vol:.12});tone(midi(58),.4,{delay:.32,vol:.12,slide:.85})},
+  slap:()=>tone(160,.12,{vol:.18,type:'triangle',slide:.5}),
+  open:()=>seq([67,72,76],.08,{vol:.1,type:'sine',len:.3}),rank:()=>seq([72,76,79,84,0,79,84],.12,{vol:.12,type:'sine',len:.3})};
+const play=k=>{try{AU.on&&SFX[k]&&SFX[k]()}catch(_){}};
+// Background music: a jaunty shop-radio loop. MIDI notes, 0 = rest.
+const MEL=[72,0,76,79,0,76,72,0,74,0,77,81,0,77,74,0,76,0,79,84,0,79,76,0,74,77,76,74,72,0,0,0];
+const BAS=[48,0,55,0,48,0,55,0,50,0,57,0,50,0,57,0,52,0,59,0,52,0,59,0,43,0,50,0,48,0,0,0];
+function music(){const c=AU.ctx;if(!c||c.state!=='running'||!AU.on)return;const st=.2,now=c.currentTime;if(AU.mt<now)AU.mt=now+.05;
+  while(AU.mt<now+.35){const i=AU.mi;if(MEL[i])tone(midi(MEL[i]),st*1.3,{at:AU.mt,vol:.25,type:'sine',dest:AU.music});if(BAS[i])tone(midi(BAS[i]),st*.9,{at:AU.mt,vol:.32,type:'triangle',dest:AU.music});AU.mt+=st;AU.mi=(i+1)%MEL.length}}
+document.addEventListener('pointerdown',()=>{AU.wasLive=!!(AU.ctx&&AU.ctx.state==='running');audioInit()},true);
+$('snd').onclick=toggleSound;sndUI();
+
+/* ---------- UI helpers ---------- */
+function toast(text,kind){const t=document.createElement('div');t.className='toast'+(kind?' '+kind:'');t.innerHTML=text;document.body.appendChild(t);if(kind==='notif'){t.style.top='calc(env(safe-area-inset-top,0px) + 10px)';play('ping')}
+  setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),400)},kind==='notif'?4200:3200)}
+const clearToasts=()=>document.querySelectorAll('.toast').forEach(t=>t.remove());
+function arm(el,ms){if(!el)return;el.disabled=true;el.classList.add('arming');setTimeout(()=>{el.disabled=false;el.classList.remove('arming')},ms)}
+
+/* ---------- one round: sticker, four receipt lines, reveal ---------- */
+const WIN=['Spot on!','Ka-ching!','Nailed it.'],LOSE=['Nope!','Not even close.','Wait, what?!'];
+function round(){const R=S.plan[S.n],T=ITEMS[R.t];S.phase='round';head();
+  M.innerHTML=`<div class="sticker${T.p>=1000?' big':''}"><small>Today #${S.daily?todayNo():'–'} · ${S.n+1}/${GAME.rounds}</small>${money(T.p)}</div>
+    <div class="dash"></div>
+    <div class="q"><b>What costs this?</b><span>${S.firstPlay?'Tap one':'1 guess'}</span></div>
+    <div class="opts" id="opts">${R.opts.map(i=>{const it=ITEMS[i];return `<button class="opt" data-i="${i}"><span class="e" aria-hidden="true">${it.e}</span><span class="n"><b>${it.n}</b><i>${it.w}</i></span><span class="p">${money(it.p)}</span></button>`}).join('')}</div>
+    <div class="after hide" id="after"><div><div class="verdict" id="vd"></div><small id="src"></small></div><button class="btn" id="next">${S.n+1>=GAME.rounds?'Receipt':'Next'}</button></div>`;
+  play('slap');
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>pick(+b.dataset.i,b))}
+function pick(i,btn){if(S.picked)return;S.picked=true;const R=S.plan[S.n],win=i===R.t,T=ITEMS[R.t];S.firstPlay=false;store.set('played','1');
+  document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(+b.dataset.i===R.t)b.classList.add('right')});if(!win)btn.classList.add('wrong');
+  $('opts').classList.add('shown');
+  const pts=win?100:0;S.score+=pts;S.results.push(win?'good':'bad');S.pts.push(pts);saveRun();play(win?'till':'bad');
+  $('vd').textContent=rnd(win?WIN:LOSE);$('vd').style.color=win?'var(--good)':'var(--bad)';
+  $('src').textContent=`Checked: ${T.src}, ${T.when}`;
+  const a=$('after');a.classList.remove('hide');arm($('next'),1100);
+  $('next').onclick=()=>{S.picked=false;S.n++;next()}}
+
+/* ---------- flow: title -> rounds -> receipt, with daily seed, resume and sharing ---------- */
+const S={phase:'title',n:0,results:[],pts:[],score:0,daily:false,seed:0,plan:[],notif:null,notifShown:null,picked:false,firstPlay:!store.get('played')};
+function head(){if(S.phase!==head.last){clearToasts();head.last=S.phase}M.classList.toggle('mid',['title','rank'].includes(S.phase));$('roundNo').textContent=S.phase==='round'?`${S.n+1}/${GAME.rounds}`:''}
+const rankFor=sc=>GAME.ranks.filter(r=>sc>=r[0]).pop()[1];
+function trailHTML(results){return `<div class="trail">${Array.from({length:GAME.rounds},(_,k)=>{const r=results[k];return `<span class="${r||''}">${r==='good'?'✓':r==='bad'?'✗':'?'}</span>`}).join('<i></i>')}</div>`}
+function shareHTML(share){return `<div class="actions"><a class="btn wa" id="wa" href="https://wa.me/?text=${encodeURIComponent(share)}" target="_blank" rel="noopener">Send on WhatsApp</a><button class="btn ghost" id="copy">${navigator.share?'Share…':'Copy'}</button></div>`}
+function bindShare(share,share0){const copy=b=>{try{navigator.clipboard.writeText(share).then(()=>b.textContent='Copied!',()=>b.textContent='Copy failed')}catch(_){b.textContent='Copy failed'}};
+  $('copy').onclick=e=>{const b=e.currentTarget;if(navigator.share)navigator.share({title:GAME.title,text:share0,url:GAME.url}).catch(err=>{if(err&&err.name!=='AbortError')copy(b)});else copy(b)}}
+function saveRun(){if(S.daily)ls.set('run',{day:todayNo(),n:S.n+1,results:S.results,pts:S.pts,score:S.score,seed:S.seed})}
+function title(){S.phase='title';head();const res=ls.get('res'),run=ls.get('run');const done=res&&res.day===todayNo(),live=!done&&run&&run.day===todayNo();
+  M.innerHTML=`<div class="center"><div class="sticker" style="font-size:34px">£?.??</div><h2 class="verdict" style="color:var(--ink);font-size:22px">${GAME.tagline}</h2>${trailHTML(done?res.results:live?run.results:[])}
+    ${done?`<span class="label">Today #${todayNo()} · ${res.r}</span>${shareHTML(res.share)}<button class="btn more" id="go">Play more ▸</button>`
+      :`<span class="label">Today #${todayNo()} · real UK prices</span><button class="btn" id="go">${live?'Carry on':'Start'}</button>`}<button class="chip" id="sndchip"></button></div>`;
+  sndUI();$('sndchip').onclick=toggleSound;if(done)bindShare(res.share,res.share0);
+  $('go').onclick=()=>{audioInit();setTimeout(sndUI,150);if(done)newRun(false);else if(live)resume(run);else newRun(true)}}
+function seedPlan(seed){RAND=mulberry(seed);return buildPlan()}
+function newRun(daily){Object.assign(S,{daily,seed:daily?todayNo()*7919+13:Math.floor(Math.random()*1e9),n:0,results:[],pts:[],score:0,notifShown:null,picked:false});S.plan=seedPlan(S.seed);RAND=mulberry(S.seed+1);
+  const R=daily?mulberry(todayNo()*104729+7):Math.random;S.notif={n:Math.floor(R()*GAME.rounds),i:Math.floor(R()*GAME.notifs.length),delay:2500+R()*3000};play('open');next()}
+function resume(run){Object.assign(S,{daily:true,seed:run.seed,results:run.results,pts:run.pts,score:run.score,n:run.n,picked:false});S.plan=seedPlan(run.seed);RAND=mulberry(S.seed+1);next()}
+function next(){if(S.n>=GAME.rounds)return rank();if(S.daily)ls.set('run',{day:todayNo(),n:S.n+1,results:[...S.results,'bad'],pts:[...S.pts,0],score:S.score,seed:S.seed}); // leaving mid-round counts as a miss
+  const n0=S.n;if(S.notif&&S.notif.n===n0){const [ic,who,msg]=GAME.notifs[S.notif.i];S.notifShown=who;setTimeout(()=>{if(S.phase==='round'&&S.n===n0)toast(`<i>${ic}</i><span><b>${who} · now</b>${msg}</span>`,'notif')},S.notif.delay)}
+  round()}
+function rank(){S.phase='rank';head();const r=rankFor(S.score),got=S.score/100;play('rank');const icons=S.results.map(x=>x==='good'?'\u{1F7E9}':'\u{1F7E5}').join('');
+  const share0=S.daily?`\u{1F9FE} ${GAME.title} #${todayNo()}\n${icons} ${got}/${GAME.rounds}\n${r}\nSame prices for everyone today. Can you beat me?`:`\u{1F9FE} ${GAME.title} ${icons} ${got}/${GAME.rounds}. ${r}`,share=share0+'\n'+GAME.url;
+  if(S.daily)ls.set('res',{day:todayNo(),score:S.score,r,results:S.results,pts:S.pts,share,share0});
+  const so=GAME.signoffs.filter(x=>!S.notifShown||!x.toLowerCase().includes(S.notifShown.toLowerCase()));
+  M.innerHTML=`<div class="center"><div class="label">Your receipt · ${got} of ${GAME.rounds} right</div><div class="verdict" style="color:${got>=3?'var(--good)':'var(--bad)'}">${r}</div><p class="note">${rnd(so.length?so:GAME.signoffs)}</p>${trailHTML(S.results)}${shareHTML(share)}<button class="btn more" id="again">Play more ▸</button></div>`;
+  arm($('again'),1200);$('again').onclick=()=>newRun(false);bindShare(share,share0)}
+
+/* ---------- pause audio when the tab is hidden ---------- */
+function pauseGame(){if(AU.ctx&&AU.ctx.state==='running')AU.ctx.suspend().catch(()=>{})}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)return pauseGame();if(AU.ctx&&AU.on)AU.ctx.resume().catch(()=>{});setTimeout(sndUI,300)});
+window.addEventListener('pagehide',pauseGame);
+
+window.__quiddle={ITEMS,seedPlan,apart};  // for the fairness test
+title();
+})();
+</script>
+
+</body>
+</html>
