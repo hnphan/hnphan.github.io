@@ -1,0 +1,266 @@
+<title>Budget Dash</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+/* =====================================================================
+   QUIDDLE: built from the game kit template (The Nappy Files).
+   Layout: a page torn from a ration book. Ink-blue cover, a printed
+   coupon value on top, four perforated coupons below, rubber stamps
+   for the answer. Single look on purpose: works on any host theme.
+   ===================================================================== */
+:root{--bg:#22336b;--card:#e9ecdf;--card2:#dde1d0;--ink:#22336b;--muted:#5f6a86;--rule:#a9b0c4;--bad:#c4392b;
+  --display:'Zilla Slab',Rockwell,'Roboto Slab',Georgia,serif;--body:'Courier Prime','Courier New',ui-monospace,monospace;color-scheme:light}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:repeating-linear-gradient(90deg,transparent 0 3px,rgba(255,255,255,.03) 3px 4px),var(--bg);color:var(--ink);font:400 14px/1.35 var(--body);overflow:hidden;-webkit-text-size-adjust:100%}
+.wrap{max-width:440px;height:100%;margin:0 auto;display:flex;flex-direction:column;gap:12px;
+  padding:max(10px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px;flex:none;color:var(--card)}
+h1{font:700 24px/1 var(--display);margin:0;letter-spacing:.14em;text-transform:uppercase}
+h1 small{display:block;font:400 10.5px var(--body);letter-spacing:.16em;margin-top:4px;opacity:.75}
+.meta{display:flex;align-items:center;gap:10px;font:700 13px var(--body);letter-spacing:.06em}
+/* the page: printed double rule inside the paper */
+main{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:18px 16px 16px;background:var(--card);box-shadow:inset 0 0 0 6px var(--card),inset 0 0 0 7.5px var(--ink),0 8px 20px rgba(0,0,0,.35)}
+main.mid{justify-content:center}
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
+.label{font:700 11.5px var(--body);color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+.note{margin:0;color:var(--muted)}
+.verdict{font:700 26px var(--display);color:var(--ink);margin:0;text-wrap:balance}
+.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;width:100%}
+.btn{font:700 14px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--card);background:var(--ink);border:2px solid var(--ink);border-radius:0;padding:12px 20px;cursor:pointer;transition:opacity .35s,transform .35s}
+.btn:active{transform:translateY(2px)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.more{background:transparent;color:var(--ink);width:min(100%,300px);border-style:dashed}
+.btn.arming{opacity:0;transform:translateY(6px);pointer-events:none}
+a.btn{display:inline-block;text-decoration:none;text-align:center}
+.btn:focus-visible,.opt:focus-visible,.chip:focus-visible,.snd:focus-visible{outline:3px solid var(--bad);outline-offset:2px}
+.chip{font:inherit;font-size:12px;background:transparent;border:0;border-bottom:1.5px dashed var(--muted);color:var(--muted);padding:4px 2px;cursor:pointer}
+.snd{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--card);background:transparent;color:var(--card);font-size:16px;display:grid;place-items:center;cursor:pointer;position:relative;flex:none}
+.snd[aria-pressed="false"]{opacity:.6}.snd[aria-pressed="false"]::after{content:'';position:absolute;left:8px;right:8px;top:50%;height:1.5px;background:currentColor;transform:rotate(-40deg)}
+.snd.locked{opacity:1;animation:sndp 1.6s ease-in-out infinite}.snd.locked::after{display:none}
+@keyframes sndp{50%{box-shadow:0 0 0 6px rgba(233,236,223,.3)}}
+/* results trail: tick boxes */
+.trail{display:flex;align-items:center;gap:8px;margin:4px 0 14px}.trail i{display:none}
+.trail span{display:grid;place-items:center;width:34px;height:34px;border:1.5px solid var(--ink);font:700 18px var(--display);color:var(--rule)}
+.trail .good{color:var(--ink)}.trail .bad{color:var(--bad);border-color:var(--bad)}
+/* coupon value box */
+.sticker{flex:none;border:1.5px solid var(--ink);padding:8px 10px 10px;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;animation:print .4s ease-out both}
+.sticker small{font:700 11px/1.3 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.sticker small b{display:block;color:var(--ink)}
+.sticker strong{font:700 52px/.9 var(--display);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.sticker.big strong{font-size:46px}
+@keyframes print{from{opacity:0;filter:blur(2px)}to{opacity:1;filter:none}}
+.q{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex:none}
+.q b{font:600 17px var(--display)}.q span{font-size:12px;color:var(--muted)}
+/* four perforated coupons */
+.opts{display:grid;grid-template-columns:1fr 1fr;flex:1;min-height:0;max-height:380px;border:1.5px dashed var(--ink)}
+.opt{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:6px;text-align:left;font:inherit;color:var(--ink);background:transparent;border:0;border-radius:0;padding:10px 10px 8px;cursor:pointer;overflow:hidden;transition:background .2s,opacity .3s;min-width:0}
+.opt:nth-child(odd){border-right:1.5px dashed var(--ink)}.opt:nth-child(-n+2){border-bottom:1.5px dashed var(--ink)}
+.opt:active{background:var(--card2)}
+.opt .e{font:700 11px var(--body);letter-spacing:.14em;color:var(--muted)}
+.opt .n{min-width:0}.opt .n b{display:block;font:600 16.5px/1.15 var(--display);text-wrap:balance}.opt .n i{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:3px}
+.opt .p{font:700 20px/1.1 var(--display);font-variant-numeric:tabular-nums;opacity:0;transition:opacity .3s}.opt .p small{display:block;font:400 11.5px var(--body);color:var(--muted)}
+.opt.sel{background:var(--card2)}
+.badge{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--card);font:700 14px var(--display);letter-spacing:0;margin-right:4px}.badge s{text-decoration-thickness:2px}.wrong .badge:first-child{background:var(--bad)}.badge.real{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.opt .e{min-height:24px}.sticker strong.ask{font-size:30px;line-height:1;text-align:right}
+.opts.shown .opt{cursor:default}.opts.shown .p{opacity:1}
+.opts.shown .opt:nth-child(2) .p{transition-delay:.1s}.opts.shown .opt:nth-child(3) .p{transition-delay:.2s}.opts.shown .opt:nth-child(4) .p{transition-delay:.3s}
+
+/* rubber stamps */
+.opt.right::after{position:absolute;right:8px;top:10px;font:700 15px/1 var(--body);letter-spacing:.18em;padding:5px 6px 4px 8px;border:2.5px solid currentColor;border-radius:3px;transform:rotate(-12deg);opacity:.85;animation:stamp .25s cubic-bezier(.3,1.6,.5,1) both}
+.opt.right::after{content:'PAID';color:var(--ink)}
+.opt.wrong .p{color:var(--bad)}
+@keyframes stamp{from{transform:rotate(-12deg) scale(2.2);opacity:0}to{transform:rotate(-12deg) scale(1);opacity:.85}}
+.after{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;min-height:48px;margin-top:auto}
+.after>div{min-width:0}.after .verdict{font-size:22px;white-space:nowrap}.after small{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hide{visibility:hidden}
+.rankstamp{display:inline-block;font:700 26px/1 var(--display);text-transform:uppercase;letter-spacing:.06em;padding:8px 14px 6px;border:4px double currentColor;transform:rotate(-4deg);margin:4px 0}
+/* floating messages */
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);z-index:60;max-width:min(92vw,420px);width:max-content;background:var(--bad);color:#fff;padding:8px 14px;font-weight:700;text-align:center;pointer-events:none;animation:tIn .3s cubic-bezier(.2,1.4,.4,1) both}
+.toast.out{animation:tOut .35s ease-in both}
+.toast.notif{background:#f6f6f1;color:#1d2230;text-align:left;display:flex;gap:10px;align-items:center;font:13px/1.3 system-ui,-apple-system,sans-serif;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.35);animation:nIn .55s cubic-bezier(.2,1.3,.35,1) both}
+.toast.notif.out{animation:nOut .4s ease-in both}.toast.notif b{display:block;font-size:11px;color:#6b7080}.toast.notif i{font-style:normal;font-size:24px}
+@keyframes tIn{from{opacity:0;transform:translate(-50%,0) scale(.85)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes tOut{to{opacity:0;transform:translate(-50%,-8px)}}
+@keyframes nIn{0%{opacity:0;transform:translate(-50%,-140%)}60%{opacity:1}100%{opacity:1;transform:translate(-50%,0)}}
+@keyframes nOut{to{opacity:0;transform:translate(-50%,-140%)}}
+.stg-ribbon{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);left:10px;z-index:90;background:var(--bad);color:#fff;font:800 11px/1 system-ui,sans-serif;letter-spacing:.12em;padding:5px 8px;pointer-events:none}
+@media (orientation:landscape) and (max-height:500px){.wrap{display:none}body::after{content:'Turn your phone upright';position:fixed;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:22px;color:var(--card)}}
+@media (max-height:620px){main{padding:14px 13px 12px;gap:7px}.wrap{gap:6px}.sticker strong{font-size:40px}.opt{padding:8px 8px 6px}.opt .n b{font-size:15px}.after{min-height:44px}h1 small{display:none}}
+@media (max-width:350px){h1{font-size:20px}.opt .n b{font-size:14.5px}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+.btn,.opt,header,h1,.sticker{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.btn{white-space:nowrap}
+.big{display:flex;gap:18px;margin:2px 0 6px}.big>div{display:flex;flex-direction:column;align-items:center}.big span{font:700 34px/1 var(--display);font-variant-numeric:tabular-nums}.big small{font:700 10px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.mgo{flex:1;display:grid;place-items:center;font:700 80px var(--display);color:var(--ink)}
+#pause{position:fixed;inset:0;z-index:80;background:var(--bg);display:grid;place-items:center;padding:16px}
+#pause .pcard{background:var(--card);padding:22px 26px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.card{flex:none;border:1.5px solid var(--ink);padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.card .lbl{font:700 11px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.card b{font:700 26px/1.1 var(--display);text-wrap:balance}.card i{font-style:normal;color:var(--muted);font-size:13px}
+.src{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcpt{width:100%;max-width:340px;font:400 13px/1.5 var(--body);text-align:left;border-top:1.5px dashed var(--ink);border-bottom:1.5px dashed var(--ink);padding:6px 0}
+.rcpt div{display:flex;justify-content:space-between;gap:10px}.rcpt div span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rcpt .tot{font-weight:700;border-top:1px solid var(--rule);margin-top:4px;padding-top:4px}
+.pocket{flex:none;display:flex;justify-content:space-between;align-items:flex-end;border:1.5px solid var(--ink);padding:8px 12px}
+.pocket small{font:700 11px/1.3 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}.pocket small b{display:block;color:var(--ink)}
+.pocket strong{font:700 42px/.9 var(--display)}
+.belt{flex:1;min-height:0;position:relative;border:1.5px dashed var(--ink);overflow:hidden;display:grid;place-items:center;background:repeating-linear-gradient(90deg,transparent 0 22px,rgba(34,51,107,.06) 22px 24px)}
+.item{position:absolute;inset:14px;border:2px solid var(--ink);background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:12px;cursor:pointer;font:inherit;color:var(--ink);animation:slide-in .22s ease-out both}
+.item b{font:700 26px/1.12 var(--display);text-wrap:balance}.item i{font-style:normal;color:var(--muted);font-size:13px}
+.item .hint{font:700 11px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.item.got{animation:grab .3s ease-in both}.item.gone{animation:slide-out .22s ease-in both}
+@keyframes slide-in{from{transform:translateX(110%)}to{transform:none}}
+@keyframes slide-out{to{transform:translateX(-110%)}}
+@keyframes grab{to{transform:translateY(120%) scale(.6);opacity:0}}
+.clock{position:absolute;left:0;bottom:0;height:6px;background:var(--ink);width:100%}
+.basket{flex:none;display:flex;gap:4px;flex-wrap:wrap;min-height:22px;align-items:center}
+.basket span{font:700 11px var(--body);border:1.5px solid var(--ink);padding:2px 6px;max-width:48%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.basket em{font:400 12px var(--body);color:var(--muted);font-style:normal}
+.dashfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none}
+.dashfoot .note{font-size:12px}
+.rcpt .bust{color:var(--bad)}
+@media (max-height:620px){.item b{font-size:21px}.pocket strong{font-size:34px}}
+</style>
+
+<div class="wrap">
+  <header><h1>Quiddle<small>Budget Dash</small></h1><div class="meta"><span id="roundNo"></span><button class="snd" id="snd" aria-pressed="true" aria-label="Sound">&#9834;</button></div></header>
+  <main id="main" aria-live="polite"></main>
+</div>
+
+<script>
+(()=>{
+const GAME={
+  slug:'quiddle-dash',
+  title:"Budget Dash",
+  url:'https://hnphan.github.io/quiddle-dash/',
+  day0:Date.UTC(2026,10,20),               // 20 Nov 2026 = Quiddle #1
+  rounds:1,
+  tagline:"\u00a320 in your pocket.<br>Don't go bust.",how:"Things roll past on the belt. Tap to grab.<br>Get as close to \u00a320 as you dare, then check out.",
+  ranks:[[0,'Skint'],[8,'Rinsed'],[14,'Window shopper'],[20,'Savvy'],[27,'Bargain hunter'],[35,'Quiddle legend']],
+  signoffs:['Daylight robbery, every one.','Your bank app would like a word.','Grandma would be appalled.','Back to tap water then.'],
+  notifs:[['\u{1F475}','Grandma','In my day this was all a penny.'],['\u{1F4AC}','Group chat','Splitting the bill 8 ways again \u{1F643}'],['\u{1F3E6}','Bank','Payday is 9 days away.'],['\u{1F4F1}','Screen time','Up 23% this week.']]
+};
+
+/* ---------- PRICES: built from prices.json by build.py. Edit the JSON, not this line. ---------- */
+const ITEMS=/*@ITEMS@*/[{"n":"Can of Coke","w":"Wagamama","p":430,"g":"Wagamama","k":"everyday","src":"Wagamama receipt","when":"Nov 2026"},{"n":"Sausage roll","w":"Greggs","p":135,"g":"Greggs","k":"everyday","src":"LBC","when":"Jan 2026"},{"n":"Latte","w":"Greggs","p":225,"g":"Greggs","k":"everyday","src":"LBC","when":"Jan 2026"},{"n":"Lunch meal deal","w":"Greggs","p":425,"g":"meal deal","k":"everyday","src":"GB News","when":"May 2026"},{"n":"Big Deal: main, side, drink","w":"Greggs","p":525,"g":"meal deal","k":"everyday","src":"GB News","when":"May 2026"},{"n":"Meal deal","w":"Tesco · with Clubcard","p":385,"g":"meal deal","k":"everyday","src":"mealdealer.uk","when":"Apr 2026"},{"n":"Finest meal deal","w":"Tesco · with Clubcard","p":550,"g":"meal deal","k":"everyday","src":"mealdealer.uk","when":"Apr 2026"},{"n":"4 pints of milk","w":"Tesco · semi-skimmed","p":175,"g":"milk","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Cravendale milk, 2 litres","w":"Tesco","p":265,"g":"milk","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Oatly Barista, 1 litre","w":"Tesco","p":220,"g":"milk","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Lurpak Spreadable, 250g","w":"Tesco","p":315,"g":"butter","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Block of salted butter","w":"Tesco · own brand, 250g","p":195,"g":"butter","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Philadelphia, 165g","w":"Tesco","p":225,"g":"cheese","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Mature cheddar, 400g","w":"Tesco · own brand","p":320,"g":"cheese","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"6 large free-range eggs","w":"Tesco","p":210,"g":"eggs","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Müller Corner","w":"Tesco","p":95,"g":"yoghurt","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Hovis Soft White, 800g","w":"Tesco","p":125,"g":"bread","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Own-brand white loaf, 800g","w":"Tesco","p":80,"g":"bread","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"6 Warburtons crumpets","w":"Tesco","p":90,"g":"crumpets","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"8 all-butter croissants","w":"Tesco","p":225,"g":"pastries","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"6 white pittas","w":"Tesco","p":50,"g":"pitta","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"5 Warburtons bagels","w":"Tesco","p":190,"g":"bagels","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Tin of Heinz beans","w":"Tesco · 415g","p":140,"g":"beans","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"8 tins of Heinz beans","w":"Tesco","p":650,"g":"beans","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Heinz beanz & sausages","w":"Tesco · 415g","p":210,"g":"beans","k":"everyday","src":"Tesco","when":"Nov 2026"},{"n":"Cheeseburger","w":"McDonald's","p":159,"g":"McDonald's","k":"everyday","src":"mcdonaldsmenu-prices.co.uk (typical)","when":"Nov 2026"},{"n":"Hash brown","w":"McDonald's","p":119,"g":"McDonald's","k":"everyday","src":"mcdonaldsmenu-prices.co.uk (typical)","when":"Nov 2026"},{"n":"Medium fries","w":"McDonald's","p":209,"g":"McDonald's","k":"everyday","src":"mcdonaldsmenu-prices.co.uk (typical)","when":"Nov 2026"},{"n":"Sausage & Egg McMuffin","w":"McDonald's","p":479,"g":"McDonald's","k":"everyday","src":"mcdonaldsmenu-prices.co.uk (typical)","when":"Nov 2026"},{"n":"Filet-O-Fish","w":"McDonald's","p":529,"g":"McDonald's","k":"everyday","src":"mcdonaldsmenu-prices.co.uk (typical)","when":"Nov 2026"},{"n":"Big Mac","w":"McDonald's","p":599,"g":"McDonald's","k":"everyday","src":"mcdonaldsmenu-prices.co.uk (typical)","when":"Nov 2026"},{"n":"20 Chicken McNuggets","w":"McDonald's","p":799,"g":"McDonald's","k":"everyday","src":"mcdonaldsmenu-prices.co.uk (typical)","when":"Nov 2026"},{"n":"Freddo","w":"Price on the pack","p":39,"g":"Freddo","k":"everyday","src":"onepoundsweets.com","when":"Aug 2026"},{"n":"First class stamp","w":"Royal Mail","p":180,"g":"stamps","k":"everyday","src":"becleverwithyourcash.com","when":"Apr 2026"},{"n":"Second class stamp","w":"Royal Mail","p":91,"g":"stamps","k":"everyday","src":"becleverwithyourcash.com","when":"Apr 2026"},{"n":"Spotify Premium","w":"Spotify UK · per month","p":1299,"g":"Spotify","k":"everyday","src":"plan-price.com","when":"Nov 2026"},{"n":"Spotify Student","w":"Spotify UK · per month","p":599,"g":"Spotify","k":"everyday","src":"plan-price.com","when":"Nov 2026"},{"n":"Netflix with ads","w":"Netflix UK · per month","p":799,"g":"Netflix","k":"everyday","src":"LADbible","when":"Sep 2026"},{"n":"Netflix, no ads","w":"Netflix UK · per month","p":1399,"g":"Netflix","k":"everyday","src":"LADbible","when":"Sep 2026"},{"n":"Netflix Premium","w":"Netflix UK · per month","p":2099,"g":"Netflix","k":"everyday","src":"LADbible","when":"Sep 2026"},{"n":"Tube ride, zone 1, peak","w":"TfL · pay as you go","p":310,"g":"TfL","k":"everyday","src":"Time Out","when":"Mar 2026"},{"n":"Tube ride, zones 1–6, peak","w":"TfL · pay as you go","p":590,"g":"TfL","k":"everyday","src":"Time Out","when":"Mar 2026"},{"n":"NHS prescription","w":"England · per item","p":990,"g":"NHS","k":"everyday","src":"Chemist+Druggist","when":"Apr 2026"},{"n":"TV licence for a year","w":"Colour","p":18000,"g":"TV licence","k":"everyday","src":"Which?","when":"Apr 2026"},{"n":"Black-and-white TV licence","w":"For a year. Still a thing.","p":6050,"g":"TV licence","k":"niche","src":"Which?","when":"Apr 2026"},{"n":"Adult passport","w":"Applied online","p":10200,"g":"passport","k":"everyday","src":"GOV.UK","when":"Apr 2026"},{"n":"Adult passport","w":"Paper form by post","p":11550,"g":"passport","k":"niche","src":"GOV.UK","when":"Apr 2026"},{"n":"Child passport","w":"Applied online","p":6650,"g":"passport","k":"everyday","src":"GOV.UK","when":"Apr 2026"},{"n":"Strawberries and cream","w":"Wimbledon","p":285,"g":"Wimbledon","k":"niche","src":"Brit Brief","when":"Jun 2026"},{"n":"Jug of Pimm's","w":"Wimbledon · with glass","p":1345,"g":"Wimbledon","k":"niche","src":"Brit Brief","when":"Jun 2026"},{"n":"Pint of Stella","w":"Wimbledon","p":885,"g":"Wimbledon","k":"niche","src":"Brit Brief","when":"Jun 2026"},{"n":"Fish finger sandwich","w":"Wimbledon","p":1450,"g":"Wimbledon","k":"niche","src":"Brit Brief","when":"Jun 2026"},{"n":"Bottle of champagne","w":"Wimbledon · cheapest","p":9800,"g":"Wimbledon","k":"niche","src":"Brit Brief","when":"Jun 2026"},{"n":"Glastonbury ticket","w":"2027 weekend, with fee","p":40800,"g":"Glastonbury","k":"niche","src":"ITV News","when":"Sep 2026"},{"n":"Ride on the London Eye","w":"Booked online","p":2900,"g":"London Eye","k":"niche","src":"London Eye","when":"Nov 2026"},{"n":"Ride on the London Eye","w":"Turning up on the day","p":3900,"g":"London Eye","k":"niche","src":"London Eye","when":"Nov 2026"},{"n":"Edinburgh Castle entry","w":"Adult, booked online","p":2350,"g":"Edinburgh Castle","k":"niche","src":"Edinburgh Castle","when":"Nov 2026"},{"n":"Harry Potter studio tour","w":"Adult, Leavesden","p":5600,"g":"Harry Potter","k":"niche","src":"TRVLOGUE","when":"2026"},{"n":"Afternoon tea at the Ritz","w":"Per adult, cheapest","p":8200,"g":"Ritz","k":"niche","src":"The Ritz","when":"Nov 2026"},{"n":"Dozen Krispy Kremes","w":"Original Glazed","p":1599,"g":"doughnuts","k":"niche","src":"Krispy Kreme","when":"Nov 2026"},{"n":"Colin the Caterpillar","w":"M&S · 625g","p":950,"g":"cake","k":"niche","src":"Ocado","when":"Nov 2026"}];
+const money=p=>p<100?p+'p':'£'+(p/100).toFixed(2);
+
+/* ---------- staging-safe storage ---------- */
+const STAGING=new RegExp('/'+GAME.slug+'-staging/').test(location.pathname),KEY=k=>(STAGING?'stg-':'')+GAME.slug+'-'+k;
+const store={get:k=>{try{return localStorage.getItem(KEY(k))}catch(_){return null}},set:(k,v)=>{try{localStorage.setItem(KEY(k),v)}catch(_){}}};
+const ls={get:k=>{try{return JSON.parse(store.get(k)||'null')}catch(_){return null}},set:(k,v)=>store.set(k,JSON.stringify(v))};
+if(STAGING){const r=document.createElement('div');r.className='stg-ribbon';r.textContent='STAGING';document.body.appendChild(r)}
+
+/* ---------- helpers, seeded randomness, daily number ---------- */
+const $=id=>document.getElementById(id),M=$('main');
+let RAND=Math.random;
+const mulberry=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const rnd=a=>a[Math.floor(RAND()*a.length)];
+const shuffle=a=>a.map(v=>[RAND(),v]).sort((x,y)=>x[0]-y[0]).map(p=>p[1]);
+const todayNo=()=>{const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-GAME.day0)/864e5)+1};
+
+/* ---------- sound (from the kit) ---------- */
+const AU={ctx:null,on:store.get('sound')!=='off',mt:0,mi:0};
+const midi=n=>440*Math.pow(2,(n-69)/12);
+function audioInit(){if(AU.ctx){if(AU.ctx.state!=='running')AU.ctx.resume().then(sndUI,()=>{});return}const A=window.AudioContext||window.webkitAudioContext;if(!A)return;try{AU.ctx=new A()}catch(_){return}
+  try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(_){}
+  AU.master=AU.ctx.createGain();AU.master.gain.value=AU.on?.5:0;AU.master.connect(AU.ctx.destination);AU.music=AU.ctx.createGain();AU.music.gain.value=.16;AU.music.connect(AU.master);setInterval(music,100);AU.ctx.onstatechange=sndUI;sndUI()}
+function sndUI(){const b=$('snd'),live=AU.ctx&&AU.ctx.state==='running';b.classList.toggle('locked',AU.on&&!live);b.setAttribute('aria-pressed',String(AU.on&&!!live));b.setAttribute('aria-label',!AU.on?'Sound off':live?'Sound on':'Tap for sound');
+  const ch=$('sndchip');if(ch)ch.textContent=!AU.on?'\u{1F507} Sound off':live?'\u{1F50A} Sound on':'\u{1F508} Tap for sound'}
+function toggleSound(){const live=AU.wasLive!==undefined?AU.wasLive:(AU.ctx&&AU.ctx.state==='running');AU.wasLive=undefined;if(AU.on&&!live){audioInit();setTimeout(()=>{sndUI();play('ping')},120);return}
+  AU.on=!AU.on;if(AU.master)AU.master.gain.value=AU.on?.5:0;store.set('sound',AU.on?'on':'off');audioInit();sndUI();if(AU.on)play('ping')}
+function tone(f,d,o={}){if(!AU.ctx)return;const c=AU.ctx,t=(o.at??c.currentTime)+(o.delay||0),os=c.createOscillator(),g=c.createGain();os.type=o.type||'triangle';os.frequency.setValueAtTime(f,t);if(o.slide)os.frequency.exponentialRampToValueAtTime(Math.max(30,f*o.slide),t+d);
+  const v=o.vol||.14;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.01);g.gain.setValueAtTime(v,t+d*.5);g.gain.exponentialRampToValueAtTime(.0001,t+d);os.connect(g);g.connect(o.dest||AU.master);os.start(t);os.stop(t+d+.05)}
+const seq=(ns,st,o={})=>ns.forEach((n,i)=>n&&tone(midi(n),o.len||st*1.2,{...o,delay:i*st}));
+const SFX={ping:()=>seq([79,86],.06,{vol:.12,type:'sine',len:.2}),
+  till:()=>{seq([84,91],.07,{vol:.12,type:'square',len:.07});tone(midi(96),.5,{delay:.16,vol:.1,type:'sine'})},  // ka-ching
+  bad:()=>{seq([67,63],.16,{vol:.12});tone(midi(58),.4,{delay:.32,vol:.12,slide:.85})},
+  slap:()=>tone(160,.12,{vol:.18,type:'triangle',slide:.5}),
+  tick:()=>tone(1400,.03,{vol:.05,type:'sine'}),alarm:()=>seq([84,79,84,79],.09,{vol:.1,type:'square',len:.08}),open:()=>seq([67,72,76],.08,{vol:.1,type:'sine',len:.3}),rank:()=>seq([72,76,79,84,0,79,84],.12,{vol:.12,type:'sine',len:.3})};
+const play=k=>{try{AU.on&&SFX[k]&&SFX[k]()}catch(_){}};
+// Background music: a jaunty shop-radio loop. MIDI notes, 0 = rest.
+const MEL=[72,0,76,79,0,76,72,0,74,0,77,81,0,77,74,0,76,0,79,84,0,79,76,0,74,77,76,74,72,0,0,0];
+const BAS=[48,0,55,0,48,0,55,0,50,0,57,0,50,0,57,0,52,0,59,0,52,0,59,0,43,0,50,0,48,0,0,0];
+function music(){const c=AU.ctx;if(!c||c.state!=='running'||!AU.on)return;const st=.2,now=c.currentTime;if(AU.mt<now)AU.mt=now+.05;
+  while(AU.mt<now+.35){const i=AU.mi;if(MEL[i])tone(midi(MEL[i]),st*1.3,{at:AU.mt,vol:.25,type:'sine',dest:AU.music});if(BAS[i])tone(midi(BAS[i]),st*.9,{at:AU.mt,vol:.32,type:'triangle',dest:AU.music});AU.mt+=st;AU.mi=(i+1)%MEL.length}}
+document.addEventListener('pointerdown',()=>{AU.wasLive=!!(AU.ctx&&AU.ctx.state==='running');audioInit()},true);
+$('snd').onclick=toggleSound;sndUI();
+
+/* ---------- UI helpers ---------- */
+function toast(text,kind){const t=document.createElement('div');t.className='toast'+(kind?' '+kind:'');t.innerHTML=text;document.body.appendChild(t);if(kind==='notif'){t.style.top='calc(env(safe-area-inset-top,0px) + 10px)';play('ping')}
+  setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),400)},kind==='notif'?4200:3200)}
+const clearToasts=()=>document.querySelectorAll('.toast').forEach(t=>t.remove());
+function arm(el,ms){if(!el)return;el.disabled=true;el.classList.add('arming');setTimeout(()=>{el.disabled=false;el.classList.remove('arming')},ms)}
+
+/* ---------- shared flow: title -> game -> results stamp, daily seed, share, pause ---------- */
+const apart=(a,b)=>Math.abs(a-b)>=Math.max(15,.12*Math.min(a,b));
+const freddos=p=>{const n=Math.round(p/39);return n<=1?'= 1 Freddo':`≈ ${n} Freddos`};
+const pickDistinct=(n,filter=()=>true)=>{const out=[],fams=new Set();for(const i of shuffle(ITEMS.map((_,i)=>i))){if(out.length===n)break;const it=ITEMS[i];if(filter(it)&&!fams.has(it.g)){out.push(i);fams.add(it.g)}}return out};
+const S={phase:'title',daily:false,seed:0,live:false,paused:false,hud:''};
+function head(){if(S.phase!==head.last){clearToasts();head.last=S.phase}M.classList.toggle('mid',['title','rank'].includes(S.phase));$('roundNo').textContent=S.hud||''}
+function hud(t){S.hud=t;$('roundNo').textContent=t}
+function shareHTML(share){return `<div class="actions"><a class="btn wa" id="wa" href="https://wa.me/?text=${encodeURIComponent(share)}" target="_blank" rel="noopener">Send on WhatsApp</a><button class="btn ghost" id="copy">${navigator.share?'Share…':'Copy'}</button></div>`}
+function bindShare(share,share0){const copy=b=>{try{navigator.clipboard.writeText(share).then(()=>b.textContent='Copied!',()=>b.textContent='Copy failed')}catch(_){b.textContent='Copy failed'}};
+  $('copy').onclick=e=>{const b=e.currentTarget;if(navigator.share)navigator.share({title:GAME.title,text:share0,url:GAME.url}).catch(err=>{if(err&&err.name!=='AbortError')copy(b)});else copy(b)}}
+const tag=()=>S.daily?' #'+todayNo():'';
+function begin(daily){S.daily=daily;S.seed=daily?todayNo()*7919+13:Math.floor(Math.random()*1e9);RAND=mulberry(S.seed);S.paused=false;S.live=false;
+  if(daily)ls.set('run',{day:todayNo()});store.set('played','1');S.phase='game';hud('');head();play('open');GAMEDEF.start()}
+function title(){S.phase='title';hud('');head();const res=ls.get('res'),run=ls.get('run'),done=res&&res.day===todayNo();
+  // leaving mid-game counts: today is a miss
+  if(!done&&run&&run.day===todayNo()){S.daily=true;return finish({stamp:'Walked out',bad:true,line:'Walked out',label:'You left mid-game',note:'So today counts as a miss. Practice runs are unlimited.',share0:`\u{1F9FE} ${GAME.title} #${todayNo()} · walked out`},true)}
+  M.innerHTML=`<div class="center"><span class="label">Ration book #${todayNo()}</span><h2 class="verdict" style="font-size:28px">${GAME.tagline}</h2>
+    ${done?`<span class="label">${res.line}</span>${shareHTML(res.share)}<button class="btn more" id="go">Practice ▸</button>`:`<p class="note">${GAME.how}</p><button class="btn" id="go">Start</button>`}<button class="chip" id="sndchip"></button></div>`;
+  sndUI();$('sndchip').onclick=toggleSound;if(done)bindShare(res.share,res.share0);
+  $('go').onclick=()=>{audioInit();setTimeout(sndUI,150);begin(!done)}}
+function finish(o,quiet){S.phase='rank';S.live=false;hud('');head();if(!quiet)play('rank');const share=o.share0+'\n'+GAME.url;
+  if(S.daily)ls.set('res',{day:todayNo(),line:o.line,share,share0:o.share0});
+  M.innerHTML=`<div class="center"><div class="label">${o.label||''}</div><div class="rankstamp" style="color:${o.bad?'var(--bad)':'var(--ink)'}">${o.stamp}</div>${o.body||''}${o.note?`<p class="note">${o.note}</p>`:''}${shareHTML(share)}<button class="btn more" id="again">Practice ▸</button></div>`;
+  arm($('again'),1200);$('again').onclick=()=>begin(false);bindShare(share,o.share0)}
+function pauseGame(){if(AU.ctx&&AU.ctx.state==='running')AU.ctx.suspend().catch(()=>{});if(S.live)S.paused=true}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)return pauseGame();
+  if(S.paused&&!$('pause')){const o=document.createElement('div');o.id='pause';o.innerHTML='<div class="pcard"><div class="verdict">Paused</div><p class="note">The clock stopped. Ready?</p><button class="btn" id="presume">Carry on</button></div>';document.body.appendChild(o);
+    $('presume').onclick=()=>{o.remove();S.paused=false;GAMEDEF.resume&&GAMEDEF.resume();audioInit();setTimeout(sndUI,150)}}
+  else if(AU.ctx&&AU.on)AU.ctx.resume().catch(()=>{});setTimeout(sndUI,300)});
+window.addEventListener('pagehide',pauseGame);
+
+/* ---------- Budget Dash: grab things off the belt, get close to £20 without going over ---------- */
+const BUDGET=2000,BELT=18,SHOW=1.9;
+function buildBelt(){
+  // everyday-ish things up to £8, families mixed, a couple of repeats of cheap staples allowed later on
+  const pool=ITEMS.map((_,i)=>i).filter(i=>ITEMS[i].p>=39&&ITEMS[i].p<=800);
+  const out=[];let last=[];
+  while(out.length<BELT){const i=pool[Math.floor(RAND()*pool.length)];if(last.includes(ITEMS[i].g)||out.includes(i))continue;out.push(i);last.push(ITEMS[i].g);if(last.length>4)last.shift()}
+  return out}
+const GAMEDEF={start(){S.belt=buildBelt();S.k=-1;S.got=[];S.live=true;S.t=0;screen();nextItem();S.last=performance.now();cancelAnimationFrame(S.raf);S.raf=requestAnimationFrame(loop)},
+  resume(){S.last=performance.now()}};
+function screen(){M.innerHTML=`<div class="pocket"><small>In your pocket<b>Don't go over</b></small><strong>£20.00</strong></div>
+    <div class="belt" id="belt"></div>
+    <div class="basket" id="basket"><em>Your basket is empty</em></div>
+    <div class="dashfoot"><p class="note" id="left"></p><button class="btn" id="out">Check out</button></div>`;
+  $('out').onclick=checkout}
+function nextItem(){S.k++;if(S.k>=BELT)return checkout();S.t=SHOW;const it=ITEMS[S.belt[S.k]];hud(`${S.k+1}/${BELT}`);
+  const b=$('belt');const old=b.querySelector('.item:not(.got)');if(old){old.classList.add('gone');setTimeout(()=>old.remove(),220)}
+  b.insertAdjacentHTML('beforeend',`<button class="item" id="it${S.k}"><b>${it.n}</b><i>${it.w}</i><span class="hint">Tap to grab</span><span class="clock" id="clk${S.k}"></span></button>`);
+  const el=$('it'+S.k);el.onpointerdown=e=>{e.preventDefault();grab(el)};
+  $('left').textContent=`${BELT-S.k-1} more on the belt`}
+function grab(el){if(!S.live||S.paused||el.classList.contains('got'))return;S.got.push(S.belt[S.k]);el.classList.add('got');setTimeout(()=>el.remove(),300);play('slap');
+  const it=ITEMS[S.belt[S.k]];$('basket').innerHTML=S.got.map(i=>`<span>${ITEMS[i].n}</span>`).join('');
+  S.t=Math.min(S.t,.35)}  // move on quickly after a grab
+function loop(now){if(!S.live)return;S.raf=requestAnimationFrame(loop);const dt=Math.min(.1,(now-S.last)/1000);S.last=now;if(S.paused)return;
+  S.t-=dt;const c=$('clk'+S.k);if(c)c.style.width=Math.max(0,S.t/SHOW*100)+'%';if(S.t<=0)nextItem()}
+function checkout(){if(!S.live)return;S.live=false;cancelAnimationFrame(S.raf);play('till');
+  let run=0;const lines=S.got.map(i=>{run+=ITEMS[i].p;return `<div class="${run>BUDGET?'bust':''}"><span>${ITEMS[i].n}</span><span>${money(ITEMS[i].p)}</span></div>`});
+  const total=run,bust=total>BUDGET,change=BUDGET-total;
+  const r=bust?'Bust!':change===0?'Exact change':change<=50?'Penny perfect':change<=150?'Sharp shopper':change<=400?'Savvy':change<=800?'Careful':'Tight';
+  const verdict=bust?`${money(total-BUDGET)} over`:change===0?'Not a penny left':`${money(change)} change`;
+  finish({label:`${S.got.length} things · ${money(total)}`,stamp:r,bad:bust||change>800,line:`${verdict} · ${r}`,
+    body:`<div class="rcpt">${lines.join('')||'<div><span>Nothing. Very sensible.</span><span>£0.00</span></div>'}<div class="tot ${bust?'bust':''}"><span>Total</span><span>${money(total)}</span></div><div><span>${bust?'Over by':'Change'}</span><span>${money(Math.abs(change))}</span></div></div>`,
+    share0:`\u{1F6D2} ${GAME.title}${tag()} · ${verdict}\n${S.got.map(()=>'\u{1F7E6}').join('')}${bust?'\u{1F4A5}':'✅'}\n${r}`})}
+window.__quiddle={ITEMS,belt:s=>{RAND=mulberry(s);return buildBelt()}};
+
+
+title();
+})();
+</script>

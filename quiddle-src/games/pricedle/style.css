@@ -1,0 +1,19 @@
+.board{display:flex;flex-direction:column;gap:4px;align-items:center;flex:1;min-height:0;justify-content:center}
+.row{display:flex;gap:5px;align-items:center}
+.row .cur{font:700 24px var(--display);width:18px;text-align:center}
+.row .pt{font:700 24px var(--display);width:8px;text-align:center;align-self:flex-end;line-height:1}
+.cell{width:38px;height:36px;border:1.5px solid var(--rule);display:grid;place-items:center;font:700 22px var(--display);font-variant-numeric:tabular-nums;position:relative}
+.cell.typed{border-color:var(--ink)}
+.cell.g{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.cell.u,.cell.d{background:var(--card2);border-color:var(--ink)}
+.cell.u::after,.cell.d::after{position:absolute;right:2px;top:1px;font:700 10px var(--body);color:var(--bad)}
+.cell.u::after{content:'\25B2'}.cell.d::after{content:'\25BC';top:auto;bottom:1px}
+.row.shake{animation:shake .3s}@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.keys{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;flex:none}
+.key{font:700 20px var(--display);height:46px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
+.key:active{background:var(--card2)}.key.wide{grid-column:span 2;font:700 13px var(--body);letter-spacing:.12em;text-transform:uppercase}
+.key.go{background:var(--ink);color:var(--card)}
+.legend{font-size:11px;color:var(--muted);text-align:center;flex:none}
+@media (max-height:700px){.card b{font-size:21px}.key{height:42px}}
+@media (max-height:620px){.cell{width:32px;height:30px;font-size:18px}.key{height:36px}.board{gap:3px}.row{gap:4px}.legend{display:none}.card i{display:none}}
+@media (max-width:350px){.cell{width:34px}}
