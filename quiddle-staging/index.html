@@ -66,14 +66,17 @@ a.btn{display:inline-block;text-decoration:none;text-align:center}
 .opt:active{background:var(--card2)}
 .opt .e{font:700 11px var(--body);letter-spacing:.14em;color:var(--muted)}
 .opt .n{min-width:0}.opt .n b{display:block;font:600 16.5px/1.15 var(--display);text-wrap:balance}.opt .n i{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:3px}
-.opt .p{font:700 20px var(--display);font-variant-numeric:tabular-nums;opacity:0;transition:opacity .3s}
+.opt .p{font:700 20px/1.1 var(--display);font-variant-numeric:tabular-nums;opacity:0;transition:opacity .3s}.opt .p small{display:block;font:400 11.5px var(--body);color:var(--muted)}
+.opt.sel{background:var(--card2)}
+.badge{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--card);font:700 14px var(--display);letter-spacing:0;margin-right:4px}.badge s{text-decoration-thickness:2px}.wrong .badge:first-child{background:var(--bad)}.badge.real{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.opt .e{min-height:24px}.sticker strong.ask{font-size:30px;line-height:1;text-align:right}
 .opts.shown .opt{cursor:default}.opts.shown .p{opacity:1}
 .opts.shown .opt:nth-child(2) .p{transition-delay:.1s}.opts.shown .opt:nth-child(3) .p{transition-delay:.2s}.opts.shown .opt:nth-child(4) .p{transition-delay:.3s}
-.opts.shown .opt:not(.right):not(.wrong){opacity:.5}
+
 /* rubber stamps */
-.opt.right::after,.opt.wrong::after{position:absolute;right:8px;top:10px;font:700 15px/1 var(--body);letter-spacing:.18em;padding:5px 6px 4px 8px;border:2.5px solid currentColor;border-radius:3px;transform:rotate(-12deg);opacity:.85;animation:stamp .25s cubic-bezier(.3,1.6,.5,1) both}
+.opt.right::after{position:absolute;right:8px;top:10px;font:700 15px/1 var(--body);letter-spacing:.18em;padding:5px 6px 4px 8px;border:2.5px solid currentColor;border-radius:3px;transform:rotate(-12deg);opacity:.85;animation:stamp .25s cubic-bezier(.3,1.6,.5,1) both}
 .opt.right::after{content:'PAID';color:var(--ink)}
-.opt.wrong::after{content:'VOID';color:var(--bad)}.opt.wrong .p{color:var(--bad)}
+.opt.wrong .p{color:var(--bad)}
 @keyframes stamp{from{transform:rotate(-12deg) scale(2.2);opacity:0}to{transform:rotate(-12deg) scale(1);opacity:.85}}
 .after{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;min-height:48px;margin-top:auto}
 .after>div{min-width:0}.after .verdict{font-size:22px;white-space:nowrap}.after small{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -112,9 +115,9 @@ const GAME={
   title:'Quiddle',
   url:'https://hnphan.github.io/quiddle/',
   day0:Date.UTC(2026,10,20),               // 20 Nov 2026 = Quiddle #1
-  rounds:5,
-  tagline:'Five price tags.<br>Guess what they buy.',
-  ranks:[[0,'Skint'],[100,'Rinsed'],[200,'Window shopper'],[300,'Savvy'],[400,'Bargain hunter'],[500,'Quiddle legend']],
+  rounds:3,
+  tagline:'Four price tags.<br>Cheapest to dearest.',
+  ranks:[[0,'Skint'],[4,'Rinsed'],[7,'Window shopper'],[9,'Savvy'],[11,'Bargain hunter'],[12,'Quiddle legend']],
   signoffs:['Daylight robbery, every one.','Your bank app would like a word.','Grandma would be appalled.','Back to tap water then.'],
   notifs:[['\u{1F475}','Grandma','In my day this was all a penny.'],['\u{1F4AC}','Group chat','Splitting the bill 8 ways again \u{1F643}'],['\u{1F3E6}','Bank','Payday is 9 days away.'],['\u{1F4F1}','Screen time','Up 23% this week.']]
 };
@@ -160,18 +163,20 @@ const rnd=a=>a[Math.floor(RAND()*a.length)];
 const shuffle=a=>a.map(v=>[RAND(),v]).sort((x,y)=>x[0]-y[0]).map(p=>p[1]);
 const todayNo=()=>{const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-GAME.day0)/864e5)+1};
 
-/* ---------- round builder: one true answer, three decoys clearly apart ---------- */
+/* ---------- round builder: four things, four families, prices clearly apart ---------- */
 const apart=(a,b)=>Math.abs(a-b)>=Math.max(20,.15*Math.min(a,b));
 function buildPlan(){
-  const order=shuffle(ITEMS.map((_,i)=>i)),targets=[],used=new Set();
-  for(const t of order){if(targets.length===GAME.rounds)break;if(!used.has(ITEMS[t].g)){targets.push(t);used.add(ITEMS[t].g)}}
-  return targets.map(t=>{const T=ITEMS[t],tp=T.p;
-    let pool=shuffle(ITEMS.map((_,i)=>i).filter(i=>i!==t&&ITEMS[i].g!==T.g&&apart(ITEMS[i].p,tp)));
-    // prefer plausible decoys: between a third and three times the price
-    const near=pool.filter(i=>ITEMS[i].p>=tp/3&&ITEMS[i].p<=tp*3);pool=[...near,...pool.filter(i=>!near.includes(i))];
-    const dec=[],fams=new Set([T.g]);for(const i of pool){if(dec.length===3)break;if(!fams.has(ITEMS[i].g)){dec.push(i);fams.add(ITEMS[i].g)}}
-    return {t,opts:shuffle([t,...dec])}});
+  // Seeded greedy fill with retries: each round gets 4 different families and 4 well-separated prices; no item twice a day.
+  for(let tries=0;tries<500;tries++){
+    const pool=shuffle(ITEMS.map((_,i)=>i)),used=new Set(),rounds=[];
+    for(let r=0;r<GAME.rounds;r++){const pick=[];
+      for(const i of pool){if(pick.length===4)break;if(used.has(i))continue;const it=ITEMS[i];
+        if(pick.every(j=>ITEMS[j].g!==it.g&&apart(ITEMS[j].p,it.p)))pick.push(i)}
+      if(pick.length<4)break;pick.forEach(i=>used.add(i));rounds.push({opts:shuffle(pick)})}
+    if(rounds.length===GAME.rounds)return rounds}
+  throw new Error('not enough prices for a day');
 }
+const freddos=p=>{const n=Math.round(p/39);return n<=1?'= 1 Freddo':`≈ ${n} Freddos`};
 
 /* ---------- sound (from the kit) ---------- */
 const AU={ctx:null,on:store.get('sound')!=='off',mt:0,mi:0};
@@ -206,51 +211,66 @@ function toast(text,kind){const t=document.createElement('div');t.className='toa
 const clearToasts=()=>document.querySelectorAll('.toast').forEach(t=>t.remove());
 function arm(el,ms){if(!el)return;el.disabled=true;el.classList.add('arming');setTimeout(()=>{el.disabled=false;el.classList.remove('arming')},ms)}
 
-/* ---------- one round: sticker, four receipt lines, reveal ---------- */
-const WIN=['Spot on!','Ka-ching!','Nailed it.'],LOSE=['Nope!','Not even close.','Wait, what?!'];
-function round(){const R=S.plan[S.n],T=ITEMS[R.t];S.phase='round';head();
-  M.innerHTML=`<div class="sticker${T.p>=1000?' big':''}"><small>Coupon value<b>Book ${S.daily?'#'+todayNo():'extra'} \u00B7 ${S.n+1} of ${GAME.rounds}</b></small><strong>${money(T.p)}</strong></div>
-    <div class="q"><b>What costs this?</b><span>${S.firstPlay?'Tap one':'1 guess'}</span></div>
-    <div class="opts" id="opts">${R.opts.map((i,k)=>{const it=ITEMS[i];return `<button class="opt" data-i="${i}"><span class="e" aria-hidden="true">${'ABCD'[k]}</span><span class="n"><b>${it.n}</b><i>${it.w}</i></span><span class="p">${money(it.p)}</span></button>`}).join('')}</div>
-    <div class="after hide" id="after"><div><div class="verdict" id="vd"></div><small id="src"></small></div><button class="btn" id="next">${S.n+1>=GAME.rounds?'Receipt':'Next'}</button></div>`;
-  play('slap');
-  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>pick(+b.dataset.i,b))}
-function pick(i,btn){if(S.picked)return;S.picked=true;const R=S.plan[S.n],win=i===R.t,T=ITEMS[R.t];S.firstPlay=false;store.set('played','1');
-  document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(+b.dataset.i===R.t)b.classList.add('right')});if(!win)btn.classList.add('wrong');
+/* ---------- one round: tap four coupons from cheapest to dearest, then check ---------- */
+const ORD=['1st','2nd','3rd','4th'];
+const HINT=['Tap the cheapest','Now the next cheapest','And the next one','Last one: the dearest'];
+const LINES=[['Skint.','Not one in place.'],['Rinsed.','One in place.'],['Getting there.','Two in place.'],[],['Spot on!','All four in order.']];
+function round(){const R=S.plan[S.n];S.phase='round';S.order=[];S.checked=false;head();
+  M.innerHTML=`<div class="sticker"><small>Book ${S.daily?'#'+todayNo():'extra'}<b>Round ${S.n+1} of ${GAME.rounds}</b></small><strong class="ask">Cheapest<br>to dearest</strong></div>
+    <div class="opts" id="opts">${R.opts.map((i,k)=>{const it=ITEMS[i];return `<button class="opt" data-i="${i}"><span class="e" aria-hidden="true">${'ABCD'[k]}</span><span class="n"><b>${it.n}</b><i>${it.w}</i></span><span class="p">${money(it.p)}<small>${freddos(it.p)}</small></span></button>`}).join('')}</div>
+    <div class="after" id="after"><div><div class="verdict" id="vd">${HINT[0]}</div><small id="src">${S.firstPlay?'Tap again to take one back':'Real UK prices'}</small></div><button class="btn hide" id="next">Check</button></div>`;
+  play('open');
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>tapCoupon(+b.dataset.i))}
+function paintOrder(){document.querySelectorAll('.opt').forEach(b=>{const k=S.order.indexOf(+b.dataset.i);b.classList.toggle('sel',k>=0);
+    b.querySelector('.e').innerHTML=k>=0?`<span class="badge">${k+1}</span>`:'ABCD'[[...b.parentNode.children].indexOf(b)]});
+  const full=S.order.length===4,nb=$('next');$('vd').textContent=full?'Happy with that?':HINT[S.order.length];
+  if(full&&nb.classList.contains('hide')){nb.classList.remove('hide');arm(nb,500);nb.onclick=check}else if(!full)nb.classList.add('hide')}
+function tapCoupon(i){if(S.checked)return;const k=S.order.indexOf(i);if(k>=0)S.order.splice(k,1);else if(S.order.length<4)S.order.push(i);play('slap');paintOrder()}
+function check(){if(S.checked)return;S.checked=true;S.firstPlay=false;store.set('played','1');const R=S.plan[S.n];
+  const truth=[...R.opts].sort((a,b)=>ITEMS[a].p-ITEMS[b].p);
+  const res=truth.map((i,k)=>S.order[k]===i);  // in true price order: did you put it in the right place?
+  const got=res.filter(Boolean).length;
+  document.querySelectorAll('.opt').forEach(b=>{const i=+b.dataset.i,mine=S.order.indexOf(i),real=truth.indexOf(i);b.disabled=true;
+    b.classList.add(mine===real?'right':'wrong');
+    b.querySelector('.e').innerHTML=mine===real?`<span class="badge">${real+1}</span>`:`<span class="badge"><s>${mine+1}</s></span><span class="badge real">${real+1}</span>`});
   $('opts').classList.add('shown');
-  const pts=win?100:0;S.score+=pts;S.results.push(win?'good':'bad');S.pts.push(pts);saveRun();play(win?'till':'bad');
-  $('vd').textContent=rnd(win?WIN:LOSE);$('vd').style.color=win?'var(--ink)':'var(--bad)';
-  $('src').textContent=`Checked: ${T.src}, ${T.when}`;
-  const a=$('after');a.classList.remove('hide');arm($('next'),1100);
-  $('next').onclick=()=>{S.picked=false;S.n++;next()}}
+  S.score+=got;S.results.push(res);saveRun();play(got===4?'till':got>=2?'ping':'bad');
+  const top=ITEMS[truth[3]];
+  $('vd').textContent=LINES[got][0]+' '+got+'/4';$('vd').style.color=got>=2?'var(--ink)':'var(--bad)';
+  $('src').textContent=`${top.n} ${freddos(top.p).replace('≈ ','= ')}`;
+  const nb=$('next');nb.textContent=S.n+1>=GAME.rounds?'Results':'Next';arm(nb,1100);nb.onclick=()=>{S.n++;next()}}
 
-/* ---------- flow: title -> rounds -> receipt, with daily seed, resume and sharing ---------- */
-const S={phase:'title',n:0,results:[],pts:[],score:0,daily:false,seed:0,plan:[],notif:null,notifShown:null,picked:false,firstPlay:!store.get('played')};
+/* ---------- flow: title -> rounds -> results, with daily seed, resume and sharing ---------- */
+const S={phase:'title',n:0,results:[],score:0,daily:false,seed:0,plan:[],notif:null,notifShown:null,order:[],checked:false,firstPlay:!store.get('played')};
+const MAX=GAME.rounds*4;
 function head(){if(S.phase!==head.last){clearToasts();head.last=S.phase}M.classList.toggle('mid',['title','rank'].includes(S.phase));$('roundNo').textContent=S.phase==='round'?`${S.n+1}/${GAME.rounds}`:''}
 const rankFor=sc=>GAME.ranks.filter(r=>sc>=r[0]).pop()[1];
-function trailHTML(results){return `<div class="trail">${Array.from({length:GAME.rounds},(_,k)=>{const r=results[k];return `<span class="${r||''}">${r==='good'?'✓':r==='bad'?'✗':'?'}</span>`}).join('<i></i>')}</div>`}
+function trailHTML(results){return `<div class="trail">${Array.from({length:GAME.rounds},(_,k)=>{const r=results[k];if(!r)return '<span>?</span>';const g=r.filter(Boolean).length;return `<span class="${g>=2?'good':'bad'}">${g}</span>`}).join('')}</div>`}
+const gridOf=results=>results.map(r=>r.map(x=>x?'\u{1F7E9}':'\u{1F7E5}').join('')).join('\n');
 function shareHTML(share){return `<div class="actions"><a class="btn wa" id="wa" href="https://wa.me/?text=${encodeURIComponent(share)}" target="_blank" rel="noopener">Send on WhatsApp</a><button class="btn ghost" id="copy">${navigator.share?'Share…':'Copy'}</button></div>`}
 function bindShare(share,share0){const copy=b=>{try{navigator.clipboard.writeText(share).then(()=>b.textContent='Copied!',()=>b.textContent='Copy failed')}catch(_){b.textContent='Copy failed'}};
   $('copy').onclick=e=>{const b=e.currentTarget;if(navigator.share)navigator.share({title:GAME.title,text:share0,url:GAME.url}).catch(err=>{if(err&&err.name!=='AbortError')copy(b)});else copy(b)}}
-function saveRun(){if(S.daily)ls.set('run',{day:todayNo(),n:S.n+1,results:S.results,pts:S.pts,score:S.score,seed:S.seed})}
-function title(){S.phase='title';head();const res=ls.get('res'),run=ls.get('run');const done=res&&res.day===todayNo(),live=!done&&run&&run.day===todayNo();
+function saveRun(){if(S.daily)ls.set('run2',{day:todayNo(),n:S.n+1,results:S.results,score:S.score,seed:S.seed})}
+function title(){S.phase='title';head();const res=ls.get('res2'),run=ls.get('run2');const done=res&&res.day===todayNo(),live=!done&&run&&run.day===todayNo();
   M.innerHTML=`<div class="center"><span class="label">Ration book #${todayNo()}</span><h2 class="verdict" style="font-size:28px">${GAME.tagline}</h2>${trailHTML(done?res.results:live?run.results:[])}
-    ${done?`<span class="label">Today #${todayNo()} · ${res.r}</span>${shareHTML(res.share)}<button class="btn more" id="go">Play more ▸</button>`
-      :`<span class="label">Real UK prices \u00B7 one guess each</span><button class="btn" id="go">${live?'Carry on':'Start'}</button>`}<button class="chip" id="sndchip"></button></div>`;
+    ${done?`<span class="label">${res.score}/${MAX} in order · ${res.r}</span>${shareHTML(res.share)}<button class="btn more" id="go">Play more ▸</button>`
+      :`<span class="label">Real UK prices · ${GAME.rounds} rounds</span><button class="btn" id="go">${live?'Carry on':'Start'}</button>`}<button class="chip" id="sndchip"></button></div>`;
   sndUI();$('sndchip').onclick=toggleSound;if(done)bindShare(res.share,res.share0);
   $('go').onclick=()=>{audioInit();setTimeout(sndUI,150);if(done)newRun(false);else if(live)resume(run);else newRun(true)}}
 function seedPlan(seed){RAND=mulberry(seed);return buildPlan()}
-function newRun(daily){Object.assign(S,{daily,seed:daily?todayNo()*7919+13:Math.floor(Math.random()*1e9),n:0,results:[],pts:[],score:0,notifShown:null,picked:false});S.plan=seedPlan(S.seed);RAND=mulberry(S.seed+1);
-  const R=daily?mulberry(todayNo()*104729+7):Math.random;S.notif={n:Math.floor(R()*GAME.rounds),i:Math.floor(R()*GAME.notifs.length),delay:2500+R()*3000};play('open');next()}
-function resume(run){Object.assign(S,{daily:true,seed:run.seed,results:run.results,pts:run.pts,score:run.score,n:run.n,picked:false});S.plan=seedPlan(run.seed);RAND=mulberry(S.seed+1);next()}
-function next(){if(S.n>=GAME.rounds)return rank();if(S.daily)ls.set('run',{day:todayNo(),n:S.n+1,results:[...S.results,'bad'],pts:[...S.pts,0],score:S.score,seed:S.seed}); // leaving mid-round counts as a miss
-  const n0=S.n;if(S.notif&&S.notif.n===n0){const [ic,who,msg]=GAME.notifs[S.notif.i];S.notifShown=who;setTimeout(()=>{if(S.phase==='round'&&S.n===n0)toast(`<i>${ic}</i><span><b>${who} · now</b>${msg}</span>`,'notif')},S.notif.delay)}
+function newRun(daily){Object.assign(S,{daily,seed:daily?todayNo()*7919+13:Math.floor(Math.random()*1e9),n:0,results:[],score:0,notifShown:null});S.plan=seedPlan(S.seed);RAND=mulberry(S.seed+1);
+  const R=daily?mulberry(todayNo()*104729+7):Math.random;S.notif={n:Math.floor(R()*GAME.rounds),i:Math.floor(R()*GAME.notifs.length),delay:3000+R()*3000};next()}
+function resume(run){Object.assign(S,{daily:true,seed:run.seed,results:run.results,score:run.score,n:run.n});S.plan=seedPlan(run.seed);RAND=mulberry(S.seed+1);next()}
+function next(){if(S.n>=GAME.rounds)return rank();if(S.daily)ls.set('run2',{day:todayNo(),n:S.n+1,results:[...S.results,[false,false,false,false]],score:S.score,seed:S.seed}); // leaving mid-round counts as a miss
+  const n0=S.n;if(S.notif&&S.notif.n===n0){const [ic,who,msg]=GAME.notifs[S.notif.i];S.notifShown=who;setTimeout(()=>{if(S.phase==='round'&&S.n===n0&&!S.checked)toast(`<i>${ic}</i><span><b>${who} · now</b>${msg}</span>`,'notif')},S.notif.delay)}
   round()}
-function rank(){S.phase='rank';head();const r=rankFor(S.score),got=S.score/100;play('rank');const icons=S.results.map(x=>x==='good'?'\u{1F7E9}':'\u{1F7E5}').join('');
-  const share0=S.daily?`\u{1F9FE} ${GAME.title} #${todayNo()}\n${icons} ${got}/${GAME.rounds}\n${r}\nSame prices for everyone today. Can you beat me?`:`\u{1F9FE} ${GAME.title} ${icons} ${got}/${GAME.rounds}. ${r}`,share=share0+'\n'+GAME.url;
-  if(S.daily)ls.set('res',{day:todayNo(),score:S.score,r,results:S.results,pts:S.pts,share,share0});
+function rank(){S.phase='rank';head();const r=rankFor(S.score);play('rank');
+  // the joke for the share card: today's dearest thing, in Freddos
+  const dear=S.plan.flatMap(x=>x.opts).sort((a,b)=>ITEMS[b].p-ITEMS[a].p)[0],D=ITEMS[dear],joke=`${D.n} ${freddos(D.p).replace('≈ ','= ')}`;
+  const share0=S.daily?`\u{1F9FE} ${GAME.title} #${todayNo()} · ${S.score}/${MAX}\n${gridOf(S.results)}\n${r}. ${joke}.`:`\u{1F9FE} ${GAME.title} ${S.score}/${MAX}\n${gridOf(S.results)}\n${r}`,share=share0+'\n'+GAME.url;
+  if(S.daily)ls.set('res2',{day:todayNo(),score:S.score,r,results:S.results,share,share0});
   const so=GAME.signoffs.filter(x=>!S.notifShown||!x.toLowerCase().includes(S.notifShown.toLowerCase()));
-  M.innerHTML=`<div class="center"><div class="label">Your book · ${got} of ${GAME.rounds} right</div><div class="rankstamp" style="color:${got>=3?'var(--ink)':'var(--bad)'}">${r}</div><p class="note">${rnd(so.length?so:GAME.signoffs)}</p>${trailHTML(S.results)}${shareHTML(share)}<button class="btn more" id="again">Play more ▸</button></div>`;
+  M.innerHTML=`<div class="center"><div class="label">Your book · ${S.score} of ${MAX} in order</div><div class="rankstamp" style="color:${S.score>=7?'var(--ink)':'var(--bad)'}">${r}</div><p class="note">${joke}. ${rnd(so.length?so:GAME.signoffs)}</p>${trailHTML(S.results)}${shareHTML(share)}<button class="btn more" id="again">Play more ▸</button></div>`;
   arm($('again'),1200);$('again').onclick=()=>newRun(false);bindShare(share,share0)}
 
 /* ---------- pause audio when the tab is hidden ---------- */
@@ -258,7 +278,7 @@ function pauseGame(){if(AU.ctx&&AU.ctx.state==='running')AU.ctx.suspend().catch(
 document.addEventListener('visibilitychange',()=>{if(document.hidden)return pauseGame();if(AU.ctx&&AU.on)AU.ctx.resume().catch(()=>{});setTimeout(sndUI,300)});
 window.addEventListener('pagehide',pauseGame);
 
-window.__quiddle={ITEMS,seedPlan,apart};  // for the fairness test
+window.__quiddle={ITEMS,seedPlan,apart,GAME};  // for the fairness test
 title();
 })();
 </script>
