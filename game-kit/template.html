@@ -1,0 +1,220 @@
+<title>My Game</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Nunito:wght@500;700;800;900&display=swap">
+<style>
+/* =====================================================================
+   GAME KIT TEMPLATE  (distilled from The Nappy Files)
+   One file. One screen. Phone first. Swap the THEME tokens and the
+   GAME CONFIG block, then replace the example round with your game.
+   ===================================================================== */
+/* ---------- THEME: change these tokens to restyle everything ---------- */
+:root{--bg:#2b1f17;--card:#f6ead2;--card2:#ead9b5;--ink:#3a2416;--muted:#7a5a3e;--accent:#c8612b;--gold:#e8b23a;--good:#7d8b3a;--bad:#b8432a;
+  --display:Caprasimo,Georgia,serif;--body:Nunito,system-ui,sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:500 15px/1.35 var(--body);overflow:hidden;-webkit-text-size-adjust:100%}
+.wrap{max-width:600px;height:100%;margin:0 auto;display:flex;flex-direction:column;gap:12px;
+  padding:max(10px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.card{background:var(--card);border:3px solid var(--ink);border-radius:18px;box-shadow:5px 5px 0 rgba(0,0,0,.5)}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;flex:none}
+h1,h2,.verdict,.mtitle,.mgo,.btn{font-family:var(--display);font-weight:400;letter-spacing:.01em;margin:0}
+h1{font-size:18px}h1 span{color:var(--accent)}h2{font-size:20px;text-wrap:balance}
+.meta{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px}
+main.card{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px;overflow-y:auto}
+main.card.mid{justify-content:center}
+.center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
+.label{font-weight:800;font-size:13px;color:var(--muted)}
+.note{margin:0;color:var(--muted);font-weight:700}
+.verdict{font-size:24px;color:var(--good)}
+.row{display:flex;align-items:center;gap:8px;flex:none}
+.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;width:100%}
+.btn{font-size:18px;color:var(--card);background:var(--accent);border:3px solid var(--ink);border-radius:999px;box-shadow:3px 3px 0 var(--ink);padding:10px 22px;cursor:pointer;transition:opacity .35s,transform .35s}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.btn.ghost{background:var(--card2);color:var(--ink)}
+.btn.more{background:var(--gold);color:var(--ink);width:min(100%,320px)}
+.btn.arming{opacity:0;transform:translateY(6px);pointer-events:none}  /* reading-time guard: buttons fade in */
+a.btn{display:inline-block;text-decoration:none;text-align:center}
+.chip{font:inherit;font-weight:800;font-size:13px;background:transparent;border:1.5px dashed var(--muted);color:var(--muted);border-radius:99px;padding:5px 12px;cursor:pointer}
+.snd{width:40px;height:40px;border-radius:50%;border:2px solid var(--ink);background:var(--card2);font-size:18px;display:grid;place-items:center;cursor:pointer;position:relative;flex:none}
+.snd[aria-pressed="false"]{opacity:.6}.snd[aria-pressed="false"]::after{content:'';position:absolute;left:8px;right:8px;top:50%;height:2px;background:currentColor;transform:rotate(-40deg)}
+.snd.locked{opacity:1;animation:sndp 1.6s ease-in-out infinite}.snd.locked::after{display:none}
+@keyframes sndp{50%{box-shadow:0 0 0 6px rgba(200,97,43,.35)}}
+/* results trail: ? ! ? ! ?  -> filled in as you play */
+.trail{display:flex;align-items:center;margin:6px 0 16px}.trail i{width:10px;height:2px;background:var(--ink);opacity:.4}
+.trail span{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;border:2px solid var(--ink);font-family:var(--display);font-size:20px;background:var(--card2);position:relative}
+.trail .good{background:#9aab5a;color:#fff}.trail .bad{background:#d98b74;color:#fff}
+.trail em{position:absolute;top:100%;margin-top:3px;font:800 11px var(--body);color:var(--muted)}
+/* mini-game stage */
+.mstage{position:relative;border:2px solid var(--ink);border-radius:14px;overflow:hidden;background:#2e2440;touch-action:none;flex:none}
+#mc{display:block;width:100%;aspect-ratio:4/3}
+.mlayer{position:absolute;inset:0;pointer-events:none}.mlayer>*{pointer-events:auto}
+.mintro,.mresult{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:10px;color:#fffaf2;background:rgba(43,31,23,.8)}
+.mresult{background:rgba(246,234,210,.95);color:var(--ink)}
+.mintro p,.mresult p{margin:0;max-width:30ch;font-weight:700}
+.mtitle{font-size:30px;color:var(--gold);text-shadow:3px 3px 0 var(--ink)}
+.mgo{font-size:56px;color:var(--gold);text-shadow:3px 3px 0 var(--ink);display:grid;place-items:center;height:100%}
+.ribbon{font:400 13px var(--display);background:var(--bad);color:#fff;border:2px solid var(--ink);border-radius:99px;padding:3px 12px}
+.tbar{height:10px;border:2px solid var(--ink);border-radius:99px;background:var(--card2);overflow:hidden;flex:none}.tbar b{display:block;height:100%;background:var(--good)}
+/* floating messages: toast and phone-style notification */
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);z-index:60;max-width:min(92vw,420px);width:max-content;background:var(--bad);color:#fff;border:2px solid var(--ink);border-radius:12px;padding:8px 14px;font-weight:800;text-align:center;pointer-events:none;animation:tIn .3s cubic-bezier(.2,1.4,.4,1) both}
+.toast.out{animation:tOut .35s ease-in both}
+.toast.notif{background:#fbf3e2;color:var(--ink);text-align:left;display:flex;gap:10px;align-items:center;font-size:14px;font-weight:700;border-radius:16px;box-shadow:3px 3px 0 var(--ink);animation:nIn .55s cubic-bezier(.2,1.3,.35,1) both}
+.toast.notif.out{animation:nOut .4s ease-in both}.toast.notif b{display:block;font-size:12px;color:var(--muted)}.toast.notif i{font-style:normal;font-size:24px}
+@keyframes tIn{from{opacity:0;transform:translate(-50%,0) scale(.85)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes tOut{to{opacity:0;transform:translate(-50%,-8px)}}
+@keyframes nIn{0%{opacity:0;transform:translate(-50%,-140%)}60%{opacity:1}100%{opacity:1;transform:translate(-50%,0)}}
+@keyframes nOut{to{opacity:0;transform:translate(-50%,-140%)}}
+/* pause, staging ribbon, rotate-your-phone */
+#pause{position:fixed;inset:0;z-index:80;background:rgba(43,31,23,.94);display:grid;place-items:center;padding:16px}
+#pause .pcard{background:var(--card);border:2px solid var(--ink);border-radius:18px;box-shadow:4px 4px 0 var(--ink);padding:20px 22px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.stg-ribbon{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);left:10px;z-index:90;background:var(--bad);color:#fff;font:800 11px/1 system-ui,sans-serif;letter-spacing:.12em;padding:5px 8px;border-radius:6px;border:1.5px solid var(--ink);pointer-events:none}
+@media (orientation:landscape) and (max-height:500px){.wrap{display:none}body::after{content:'Turn your phone upright \1F4F1';position:fixed;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:22px;color:var(--card)}}
+@media (max-height:600px){main.card{padding:8px;gap:6px}.wrap{gap:6px}h2{font-size:16px}}
+@media (max-width:350px){h1{font-size:14px}.mtitle{font-size:24px}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important}}
+.mstage,.btn,header,h1,h2{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+</style>
+
+<div class="wrap">
+  <header class="card"><h1>My <span>Game</span></h1><div class="meta"><span id="roundNo"></span><button class="snd" id="snd" aria-pressed="true" aria-label="Sound">&#9834;</button></div></header>
+  <main class="card" id="main" aria-live="polite"></main>
+</div>
+
+<script>
+(()=>{
+/* =================== GAME CONFIG: edit me =================== */
+const GAME={
+  slug:'my-game',                          // folder name on the site: /my-game/ and /my-game-staging/
+  title:'My Game',
+  url:'https://hnphan.github.io/my-game/', // production address, used in share messages
+  day0:Date.UTC(2026,10,20),               // the day that becomes daily #1
+  rounds:3,                                // rounds per daily set
+  tagline:"Something's happening.<br>Can you cope?",
+  ranks:[[0,'Beginner'],[150,'Getting there'],[300,'Pro'],[450,'Legend']],
+  signoffs:['Faster than asking ChatGPT.','The group chat will hear about this.'],
+  notifs:[['\u{1F4F1}','Grandma','sent 14 photos. To you.'],['\u{1F4AC}','Group chat','47 new messages']]  // [icon, sender, text]
+};
+
+/* ---------- staging-safe storage: /<slug>-staging/ gets its own saved data ---------- */
+const STAGING=new RegExp('/'+GAME.slug+'-staging/').test(location.pathname),KEY=k=>(STAGING?'stg-':'')+GAME.slug+'-'+k;
+const store={get:k=>{try{return localStorage.getItem(KEY(k))}catch(_){return null}},set:(k,v)=>{try{localStorage.setItem(KEY(k),v)}catch(_){}}};
+const ls={get:k=>{try{return JSON.parse(store.get(k)||'null')}catch(_){return null}},set:(k,v)=>store.set(k,JSON.stringify(v))};
+if(STAGING){const r=document.createElement('div');r.className='stg-ribbon';r.textContent='STAGING';document.body.appendChild(r)}
+
+/* ---------- helpers, seeded randomness, daily number ---------- */
+const $=id=>document.getElementById(id),M=$('main');
+let RAND=Math.random;
+const mulberry=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const rnd=a=>a[Math.floor(RAND()*a.length)];
+const shuffle=a=>a.map(v=>[RAND(),v]).sort((x,y)=>x[0]-y[0]).map(p=>p[1]);
+const todayNo=()=>{const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-GAME.day0)/864e5)+1};
+
+/* ---------- sound: live-synthesised, tap-to-enable, honest UI ---------- */
+const AU={ctx:null,on:store.get('sound')!=='off',mt:0,mi:0};
+const midi=n=>440*Math.pow(2,(n-69)/12);
+function audioInit(){if(AU.ctx){if(AU.ctx.state!=='running')AU.ctx.resume().then(sndUI,()=>{});return}const A=window.AudioContext||window.webkitAudioContext;if(!A)return;try{AU.ctx=new A()}catch(_){return}
+  try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(_){}
+  AU.master=AU.ctx.createGain();AU.master.gain.value=AU.on?.5:0;AU.master.connect(AU.ctx.destination);AU.music=AU.ctx.createGain();AU.music.gain.value=.22;AU.music.connect(AU.master);setInterval(music,100);AU.ctx.onstatechange=sndUI;sndUI()}
+function sndUI(){const b=$('snd'),live=AU.ctx&&AU.ctx.state==='running';b.classList.toggle('locked',AU.on&&!live);b.setAttribute('aria-pressed',String(AU.on&&!!live));b.setAttribute('aria-label',!AU.on?'Sound off':live?'Sound on':'Tap for sound');
+  const ch=$('sndchip');if(ch)ch.textContent=!AU.on?'\u{1F507} Sound off':live?'\u{1F50A} Sound on':'\u{1F508} Tap for sound'}
+function toggleSound(){const live=AU.wasLive!==undefined?AU.wasLive:(AU.ctx&&AU.ctx.state==='running');AU.wasLive=undefined;if(AU.on&&!live){audioInit();setTimeout(()=>{sndUI();play('ping')},120);return}
+  AU.on=!AU.on;if(AU.master)AU.master.gain.value=AU.on?.5:0;store.set('sound',AU.on?'on':'off');audioInit();sndUI();if(AU.on)play('ping')}
+function tone(f,d,o={}){if(!AU.ctx)return;const c=AU.ctx,t=(o.at??c.currentTime)+(o.delay||0),os=c.createOscillator(),g=c.createGain();os.type=o.type||'triangle';os.frequency.setValueAtTime(f,t);if(o.slide)os.frequency.exponentialRampToValueAtTime(Math.max(30,f*o.slide),t+d);
+  const v=o.vol||.14;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.01);g.gain.setValueAtTime(v,t+d*.5);g.gain.exponentialRampToValueAtTime(.0001,t+d);os.connect(g);g.connect(o.dest||AU.master);os.start(t);os.stop(t+d+.05)}
+const seq=(ns,st,o={})=>ns.forEach((n,i)=>n&&tone(midi(n),o.len||st*1.2,{...o,delay:i*st}));
+const SFX={ping:()=>seq([79,86],.06,{vol:.12,type:'sine',len:.2}),good:()=>seq([72,76,79,84],.08,{vol:.13,len:.25,type:'sine'}),bad:()=>{seq([67,63],.16,{vol:.12});tone(midi(58),.4,{delay:.32,vol:.12,slide:.85})},
+  tick:()=>tone(1200,.03,{vol:.04,type:'sine'}),alarm:()=>seq([84,79,84,79],.09,{vol:.1,type:'square',len:.08}),open:()=>seq([67,72,76],.08,{vol:.1,type:'sine',len:.3}),rank:()=>seq([72,76,79,84,0,79,84],.12,{vol:.12,type:'sine',len:.3})};
+const play=k=>{try{AU.on&&SFX[k]&&SFX[k]()}catch(_){}};
+// Background music: a looping melody + bass, scheduled a little ahead by a 100ms timer. Edit MEL/BAS (MIDI notes, 0 = rest).
+const MEL=[76,0,79,0,81,0,79,76,74,0,0,0,72,0,74,76,0,0,79,0,81,84,81,79,76,0,74,0,72,0,0,0];
+const BAS=[48,55,60,55,45,52,57,52,41,48,53,48,43,50,55,50,48,55,60,55,45,52,57,52,41,48,53,48,43,50,55,50];
+function music(){const c=AU.ctx;if(!c||c.state!=='running'||!AU.on)return;const tr=S.phase==='mini'?5:0,st=S.phase==='mini'?.19:.24,now=c.currentTime;if(AU.mt<now)AU.mt=now+.05;
+  while(AU.mt<now+.35){const i=AU.mi;if(MEL[i])tone(midi(MEL[i]+tr),st*1.6,{at:AU.mt,vol:.3,type:'sine',dest:AU.music});if(BAS[i])tone(midi(BAS[i]+tr),st*.9,{at:AU.mt,vol:.35,type:'triangle',dest:AU.music});AU.mt+=st;AU.mi=(i+1)%MEL.length}}
+document.addEventListener('pointerdown',()=>{AU.wasLive=!!(AU.ctx&&AU.ctx.state==='running');audioInit()},true);
+$('snd').onclick=toggleSound;sndUI();
+
+/* ---------- UI helpers: toasts, notifications, reading-time guard ---------- */
+function toast(text,kind){const t=document.createElement('div');t.className='toast'+(kind?' '+kind:'');t.innerHTML=text;document.body.appendChild(t);if(kind==='notif'){t.style.top='calc(env(safe-area-inset-top,0px) + 10px)';play('ping')}
+  setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),400)},kind==='notif'?4200:3200)}
+const clearToasts=()=>document.querySelectorAll('.toast').forEach(t=>t.remove());
+function arm(el,ms){if(!el)return;el.disabled=true;el.classList.add('arming');setTimeout(()=>{el.disabled=false;el.classList.remove('arming')},ms)}
+
+/* ---------- canvas mini-game engine ---------- */
+const MW=320,MH=240;let mcv=null,mg=null,MS=null,mRaf=null,mLast=0;
+let SEEN=ls.get('seen')||[];
+function mSetup(){mcv=$('mc');const dpr=Math.min(3,window.devicePixelRatio||1);mcv.width=MW*dpr;mcv.height=MH*dpr;mg=mcv.getContext('2d');mg.setTransform(dpr,0,0,dpr,0,0);
+  const pos=e=>{const r=mcv.getBoundingClientRect();return [(e.clientX-r.left)*MW/r.width,(e.clientY-r.top)*MH/r.height]};
+  mcv.oncontextmenu=e=>e.preventDefault();
+  mcv.onpointerdown=e=>{if(!MS||MS.phase!=='play')return;e.preventDefault();mcv.setPointerCapture(e.pointerId);const [x,y]=pos(e);MS.gm.down&&MS.gm.down(MS.s,x,y)};
+  mcv.onpointermove=e=>{if(!MS||MS.phase!=='play')return;const [x,y]=pos(e);MS.gm.move&&MS.gm.move(MS.s,x,y)};
+  mcv.onpointerup=mcv.onpointercancel=e=>{if(!MS||MS.phase!=='play')return;const [x,y]=pos(e);MS.gm.up&&MS.gm.up(MS.s,x,y)}}
+const rr=(x,y,w,h,r,f,s,lw=2)=>{mg.beginPath();mg.roundRect?mg.roundRect(x,y,w,h,r):mg.rect(x,y,w,h);if(f){mg.fillStyle=f;mg.fill()}if(s){mg.strokeStyle=s;mg.lineWidth=lw;mg.stroke()}};
+const cir=(x,y,r,f,s,lw=2)=>{mg.beginPath();mg.arc(x,y,r,0,Math.PI*2);if(f){mg.fillStyle=f;mg.fill()}if(s){mg.strokeStyle=s;mg.lineWidth=lw;mg.stroke()}};
+const txt=(t,x,y,size,col,al='center')=>{mg.font=`${size}px Caprasimo, Georgia, serif`;mg.fillStyle=col;mg.textAlign=al;mg.textBaseline='middle';mg.fillText(t,x,y)};
+
+/* Each mini-game: {title, hint, dur, init(s), down/move/up(s,x,y), update(s,dt), draw(s,t), timeout(s), score?(s)}.
+   Call mEnd(true|false) to finish. Replace this example with your own games. */
+const MINIS={
+  tap:{title:'Tap!',hint:'Tap the bouncing star 5 times before time runs out.',dur:7,
+    init(s){s.x=160;s.y=120;s.vx=90;s.vy=70;s.got=0;s.need=5;s.pop=0},
+    down(s,x,y){if(Math.hypot(x-s.x,y-s.y)<26){s.got++;s.pop=.25;play('ping');s.vx*=1.15;s.vy*=1.15;if(s.got>=s.need)mEnd(true)}else play('tick')},
+    update(s,dt){s.pop=Math.max(0,s.pop-dt);s.x+=s.vx*dt;s.y+=s.vy*dt;if(s.x<24||s.x>MW-24)s.vx*=-1;if(s.y<44||s.y>MH-24)s.vy*=-1},
+    timeout(){mEnd(false)},score(s){return 50},
+    draw(s){mg.fillStyle='#2e2440';mg.fillRect(0,0,MW,MH);for(let i=0;i<s.need;i++)cir(20+i*18,20,6,i<s.got?'#7d8b3a':'rgba(255,255,255,.15)','#f6ead2',1);
+      cir(s.x,s.y,22+s.pop*20,'#e8b23a','#3a2416',3);txt('★',s.x,s.y+1,24,'#3a2416')}}
+};
+const LINES={win:['Nailed it!','Smooth.'],lose:['So close.','Next time.']};
+function runMini(key,done){const gm=MINIS[key];MS={key,gm,s:{},t:0,phase:'intro',done};gm.init(MS.s);S.phase='mini';head();const isNew=!SEEN.includes(key);
+  M.innerHTML=`<div class="row" style="justify-content:space-between"><h2>Round ${S.n+1}</h2><span class="label">${GAME.title}</span></div>
+    <div class="mstage"><canvas id="mc" aria-label="Mini-game"></canvas><div class="mlayer" id="ml"></div></div><div class="tbar"><b id="mfill" style="width:100%"></b></div>`;
+  mSetup();$('ml').innerHTML=`<div class="mintro">${isNew?'<span class="ribbon">New!</span>':''}<div class="mtitle">${gm.title}</div><p>${gm.hint}</p><button class="btn" id="mready">${isNew?'Ready!':'Go!'}</button></div>`;
+  play('alarm');arm($('mready'),isNew?1200:700);
+  $('mready').onclick=e=>{e.stopPropagation();if(isNew){SEEN.push(key);ls.set('seen',SEEN)}MS.phase='go';$('ml').innerHTML='<div class="mgo">Go!</div>';setTimeout(()=>{if(MS&&MS.phase==='go'){MS.phase='play';MS.t=0;$('ml').innerHTML=''}},500)};
+  mLast=performance.now();cancelAnimationFrame(mRaf);mRaf=requestAnimationFrame(mLoop)}
+function mLoop(now){if(!MS)return;mRaf=requestAnimationFrame(mLoop);const dt=Math.min(.05,(now-mLast)/1000);mLast=now;const gm=MS.gm;
+  if(MS.phase==='play'&&!S.paused){MS.t+=dt;gm.update(MS.s,dt);const left=Math.max(0,1-MS.t/gm.dur);const f=$('mfill');if(f){f.style.width=(left*100)+'%';f.style.background=left<.3?'var(--bad)':''}if(MS.t>=gm.dur&&MS.phase==='play')gm.timeout(MS.s)}
+  gm.draw(MS.s,now/1000)}
+function mEnd(win){if(!MS||MS.phase!=='play')return;MS.phase='over';const gm=MS.gm,pts=win?(gm.score?gm.score(MS.s):50):0;S.score+=pts;S.results.push(win?'good':'bad');S.pts.push(pts);saveRun();play(win?'good':'bad');
+  setTimeout(()=>{if(!MS)return;$('ml').innerHTML=`<div class="mresult"><div class="verdict" style="color:${win?'var(--good)':'var(--bad)'}">${win?'Nailed it!':'Oh no!'}</div>${win?`<span class="label">+${pts} pts</span>`:''}<p>${rnd(win?LINES.win:LINES.lose)}</p><button class="btn" id="mnext">Next</button></div>`;
+    arm($('mnext'),1100);$('mnext').onclick=()=>{cancelAnimationFrame(mRaf);const d=MS.done;MS=null;d()}},900)}
+
+/* ---------- flow: title -> rounds -> rank, with daily seed, resume and sharing ---------- */
+const S={phase:'title',n:0,results:[],pts:[],score:0,daily:false,seed:0,plan:[],notif:null,notifShown:null,paused:false};
+function head(){if(S.phase!==head.last){clearToasts();head.last=S.phase}M.classList.toggle('mid',['title','rank'].includes(S.phase));$('roundNo').textContent=S.phase==='mini'?`Round ${S.n+1}/${GAME.rounds}`:''}
+const rankFor=sc=>GAME.ranks.filter(r=>sc>=r[0]).pop()[1];
+function trailHTML(results,pts){return `<div class="trail">${Array.from({length:GAME.rounds},(_,k)=>{const r=results[k];return `<span class="${r||''}">${r==='good'?'✓':r==='bad'?'✗':'?'}${pts&&pts[k]!=null?`<em>${pts[k]}</em>`:''}</span>`}).join('<i></i>')}</div>`}
+function shareHTML(share){return `<div class="actions"><a class="btn" id="wa" href="https://wa.me/?text=${encodeURIComponent(share)}" target="_blank" rel="noopener">Send on WhatsApp</a><button class="btn ghost" id="copy">${navigator.share?'Share…':'Copy'}</button></div>`}
+function bindShare(share,share0){const copy=b=>{try{navigator.clipboard.writeText(share).then(()=>b.textContent='Copied!',()=>b.textContent='Copy failed')}catch(_){}};
+  $('copy').onclick=e=>{const b=e.currentTarget;if(navigator.share)navigator.share({title:GAME.title,text:share0,url:GAME.url}).catch(err=>{if(err&&err.name!=='AbortError')copy(b)});else copy(b)}}
+function saveRun(){if(S.daily)ls.set('run',{day:todayNo(),n:S.n+1,results:S.results,pts:S.pts,score:S.score,seed:S.seed,plan:S.plan})}
+function title(){S.phase='title';head();const res=ls.get('res'),run=ls.get('run');const done=res&&res.day===todayNo(),live=!done&&run&&run.day===todayNo();
+  M.innerHTML=`<div class="center"><h2>${GAME.tagline}</h2>${trailHTML(done?res.results:live?run.results:[],done?res.pts:live?run.pts:null)}
+    ${done?`<span class="label">Today #${todayNo()} · ${res.score} pts · ${res.r}</span>${shareHTML(res.share)}<button class="btn more" id="go">Play more ▸</button>`
+      :`<span class="label">Today #${todayNo()}</span><button class="btn" id="go">${live?'Carry on':'Start'}</button>`}<button class="chip" id="sndchip"></button></div>`;
+  sndUI();$('sndchip').onclick=toggleSound;if(done)bindShare(res.share,res.share0);
+  $('go').onclick=()=>{audioInit();setTimeout(sndUI,150);if(done)newRun(false);else if(live)resume(run);else newRun(true)}}
+function newRun(daily){Object.assign(S,{daily,seed:daily?todayNo()*7919+13:Math.floor(Math.random()*1e9),n:0,results:[],pts:[],score:0,notifShown:null});RAND=mulberry(S.seed);
+  S.plan=Array.from({length:GAME.rounds},()=>rnd(Object.keys(MINIS)));
+  const R=daily?mulberry(todayNo()*104729+7):Math.random;S.notif={n:Math.floor(R()*GAME.rounds),i:Math.floor(R()*GAME.notifs.length),delay:2000+R()*4000};play('open');next()}
+function resume(run){Object.assign(S,{daily:true,seed:run.seed,results:run.results,pts:run.pts,score:run.score,plan:run.plan,n:run.n});next()}
+function next(){if(S.n>=GAME.rounds)return rank();if(S.daily)ls.set('run',{day:todayNo(),n:S.n+1,results:[...S.results,'bad'],pts:[...S.pts,0],score:S.score,seed:S.seed,plan:S.plan}); // leaving mid-round counts as a miss
+  const n0=S.n;if(S.notif&&S.notif.n===n0){const [ic,who,msg]=GAME.notifs[S.notif.i];S.notifShown=who;setTimeout(()=>{if(S.phase==='mini'&&S.n===n0)toast(`<i>${ic}</i><span><b>${who} · now</b>${msg}</span>`,'notif')},S.notif.delay)}
+  runMini(S.plan[S.n],()=>{S.n++;next()})}
+function rank(){S.phase='rank';head();const r=rankFor(S.score);play('rank');const icons=S.results.map(x=>x==='good'?'\u{1F7E9}':'\u{1F7E5}').join('');
+  const share0=S.daily?`${GAME.title} #${todayNo()}\n${icons} ${S.score} pts\n${r}\nSame rounds for everyone today. Can you beat me?`:`${GAME.title} ${icons} ${S.score} pts. ${r}`,share=share0+'\n'+GAME.url;
+  if(S.daily)ls.set('res',{day:todayNo(),score:S.score,r,results:S.results,pts:S.pts,share,share0});
+  const so=GAME.signoffs.filter(x=>!S.notifShown||!x.toLowerCase().includes(S.notifShown.toLowerCase()));
+  M.innerHTML=`<div class="center"><div class="label">Your rank · ${S.score} pts</div><div class="verdict">${r}</div><p class="note">${rnd(so.length?so:GAME.signoffs)}</p>${trailHTML(S.results,S.pts)}${shareHTML(share)}<button class="btn more" id="again">Play more ▸</button></div>`;
+  arm($('again'),1200);$('again').onclick=()=>newRun(false);bindShare(share,share0)}
+
+/* ---------- pause when the tab is hidden; resume on tap ---------- */
+function pauseGame(){if(AU.ctx&&AU.ctx.state==='running')AU.ctx.suspend().catch(()=>{});if(S.phase==='mini'&&MS&&MS.phase==='play')S.paused=true}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)return pauseGame();if(S.paused&&!$('pause')){const o=document.createElement('div');o.id='pause';o.innerHTML='<div class="pcard"><div class="verdict">Paused</div><p class="note">We waited for you.</p><button class="btn" id="presume">Carry on</button></div>';document.body.appendChild(o);
+    $('presume').onclick=()=>{o.remove();S.paused=false;mLast=performance.now();audioInit();setTimeout(sndUI,150)}}else if(AU.ctx&&AU.on)AU.ctx.resume().catch(()=>{});setTimeout(sndUI,300)});
+window.addEventListener('pagehide',pauseGame);
+
+title();
+})();
+</script>

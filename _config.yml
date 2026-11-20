@@ -79,6 +79,7 @@ gems:
 
 # Exclude these files from your production _site
 exclude:
+  - game-kit
   - Gemfile
   - Gemfile.lock
   - LICENSE
