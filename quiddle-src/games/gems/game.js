@@ -1,4 +1,4 @@
-/* ---------- Hidden Gem or Made Up: real foodhall launches vs our inventions ---------- */
+/* ---------- Did Kathryn Turner Make This? Real M&S launches vs our inventions ---------- */
 // Real launches: each one was reported in the press in 2026 (or is a famous old one). src says where.
 const REAL=[
  ['Chocolate & cornflake cookies','The November one people queued for','The Week, Nov 2026'],
@@ -49,10 +49,10 @@ const GAMEDEF={start(){S.deck=buildDeck();S.k=0;S.log=[];S.streak=0;S.best=0;S.s
 function screen(){M.innerHTML=`<div class="hud"><div><span id="sc">0</span><small>right</small></div><div><span id="st">0</span><small>streak</small></div><div><span id="nn">1</span><small>of ${N}</small></div></div>
   <div class="launch" id="launch"></div>
   <div class="trace" id="trace">${Array.from({length:N},()=>'<i></i>').join('')}</div>
-  <div class="choose" id="choose"><button class="btn" id="yes">Real launch</button><button class="btn ghost" id="no">Made up</button></div>`;
+  <div class="choose" id="choose"><button class="btn" id="yes">She made it</button><button class="btn ghost" id="no">Made up</button></div>`;
   $('yes').onclick=()=>answer(true);$('no').onclick=()=>answer(false)}
 function card(){const c=S.deck[S.k];hud(`${S.k+1}/${N}`);$('nn').textContent=S.k+1;S.t=SECS;S.locked=false;
-  const L=$('launch');L.className='launch';L.innerHTML=`<span class="new">New in</span><b>${c.n}</b><span class="why">${c.why}</span><span class="clock" id="clk"></span>`;
+  const L=$('launch');L.className='launch';L.innerHTML=`<span class="new">New at M&amp;S?</span><b>${c.n}</b><span class="why">${c.why}</span><span class="clock" id="clk"></span>`;
   $('choose').style.visibility='visible';play('slap');
   S.live=true;S.last=performance.now();cancelAnimationFrame(S.raf);S.raf=requestAnimationFrame(loop)}
 function loop(now){if(!S.live)return;S.raf=requestAnimationFrame(loop);const dt=Math.min(.1,(now-S.last)/1000);S.last=now;if(S.paused)return;
@@ -63,14 +63,14 @@ function answer(said){if(S.locked)return;S.locked=true;S.live=false;cancelAnimat
   play(ok?(S.streak%4===0?'till':'ping'):'bad');
   $('sc').textContent=S.score;$('st').textContent=S.streak;$('trace').children[S.k].className=ok?'g':'r';
   const L=$('launch');L.className='launch '+(c.real?'real':'fake');
-  L.querySelector('.why').textContent=c.real?`Real. ${c.src}.`:'We made this one up.';
-  L.insertAdjacentHTML('beforeend',`<span class="stamp">${c.real?'REAL':'MADE UP'}</span>`);
+  L.querySelector('.why').textContent=c.real?`A real M&S launch. ${c.src}.`:'Not her. We made this one up.';
+  L.insertAdjacentHTML('beforeend',`<span class="stamp">${c.real?'SHE MADE IT':'MADE UP'}</span>`);
   if(said===null)toast('Too slow!');
   $('choose').style.visibility='hidden';
   setTimeout(()=>{S.k++;S.k>=N?end():card()},ok?900:1500)}
-function end(){const r=S.score>=12?'Foodhall royalty':S.score>=10?'Hidden gem hunter':S.score>=8?'Taste tester':S.score>=6?'Window shopper':'Fell for it';
+function end(){const r=S.score>=12?'Director material':S.score>=10?'Hidden gem hunter':S.score>=8?'Taste tester':S.score>=6?'Foodhall regular':'Fell for it';
   finish({label:`${S.score} of ${N} right · best streak ${S.best}`,stamp:r,bad:S.score<6,line:`${S.score}/${N} · ${r}`,
-    body:`<div class="rcpt">${S.deck.map((c,k)=>`<div><span>${S.log[k]?'✓':'✗'} ${c.n}</span><span>${c.real?'Real':'Made up'}</span></div>`).join('')}</div>`,
-    note:'<span class="fine">Unofficial fan game, not made by or linked to M&amp;S. Real ones were reported in the press. Made-up ones are ours.</span>',
-    share0:`\u{1F36A} ${GAME.title}${tag()} · ${S.score}/${N}\n${S.log.map(x=>x?'\u{1F7E9}':'\u{1F7E5}').join('')}\n${r}`})}
+    body:`<div class="rcpt">${S.deck.map((c,k)=>`<div><span>${S.log[k]?'✓':'✗'} ${c.n}</span><span>${c.real?'She made it':'Made up'}</span></div>`).join('')}</div>`,
+    note:'<span class="fine">Unofficial fan game, not made by M&amp;S. Real ones are M&amp;S launches reported in the press. Made-up ones are ours.</span>',
+    share0:`\u{1F36A} ${GAME.title}${tag()}\n${S.score}/${N} spotted\n${S.log.map(x=>x?'\u{1F7E9}':'\u{1F7E5}').join('')}\n${r}`})}
 window.__quiddle={REAL,FAKE,deck:s=>{RAND=mulberry(s);return buildDeck()}};
