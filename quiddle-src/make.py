@@ -63,8 +63,9 @@ def make(folder):
     meta=json.load(open(os.path.join(folder,'meta.json')))
     css=open(os.path.join(folder,'style.css')).read()
     game=open(os.path.join(folder,'game.js')).read()
-    dp=os.path.join(folder,'data.js')
-    if os.path.exists(dp): game=open(dp).read()+'\n'+game
+    for extra in ('questions.js','data.js'):
+        dp=os.path.join(folder,extra)
+        if os.path.exists(dp): game=open(dp).read()+'\n'+game
     h=head_html.replace('<title>Quiddle Rush</title>',f"<title>{meta['title']}</title>")
     h=h.replace(css_all,base_css+common_css+css)
     h=h.replace('<small>Rush · Ministry of Prices</small>',f"<small>{meta['sub']}</small>")

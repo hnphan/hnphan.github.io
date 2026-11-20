@@ -23,3 +23,18 @@
 @media (max-height:620px){.rcpt{font-size:11px;line-height:1.22}.center{gap:6px}.center .btn{padding:10px 16px}}
 .rcpt div span:last-child{white-space:nowrap;flex:none}
 .acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:11px;color:var(--muted)}.acts b{color:var(--ink)}
+.launch .stmt{font-size:24px;line-height:1.2}
+.launch.t-quote .pack,.launch.t-tf .pack,.launch.t-line .pack{max-height:30%}
+.choose.t-quote,.choose.t-line,.choose.t-price{grid-template-columns:1fr;gap:6px}
+.choose .ans{white-space:normal;text-transform:none;letter-spacing:0;font:600 15px/1.25 var(--display);padding:11px 12px;text-align:left;border:1.5px solid var(--ink)}
+.choose.t-price .ans,.choose.t-line .ans{text-align:center;font-size:17px}
+.choose.t-tf .ans{text-align:center;font:700 15px var(--body);letter-spacing:.12em;text-transform:uppercase}
+.choose .ans.right{background:var(--ink);color:var(--card);border-color:var(--ink)}.choose .ans.wrong{background:var(--bad);color:#fff;border-color:var(--bad)}.choose .ans.dim{opacity:.4}
+.launch.t-quote.real,.launch.t-tf.real,.launch.t-line.real,.launch.t-price.real{background:var(--ink);color:var(--card)}
+.launch.t-quote.fake,.launch.t-tf.fake,.launch.t-line.fake,.launch.t-price.fake{background:#f2d6d1}
+.launch.t-quote.fake b,.launch.t-tf.fake b,.launch.t-line.fake b,.launch.t-price.fake b{text-decoration:none}
+.launch.t-quote.real .why,.launch.t-tf.real .why,.launch.t-line.real .why,.launch.t-price.real .why{color:var(--rule)}
+.launch.real .clock,.launch.fake .clock{display:none}
+@media (max-height:700px){.launch.t-quote .pack{display:none}.launch.t-price .pack{max-height:26%}.choose .ans{padding:8px 10px;font-size:13px}.launch .stmt{font-size:20px}}
+@media (max-height:620px){.launch .pack{max-height:28%}.launch.t-tf .pack,.launch.t-line .pack{display:none}}
+.toast:not(.notif){top:44%;font:700 18px var(--display);padding:6px 16px}
